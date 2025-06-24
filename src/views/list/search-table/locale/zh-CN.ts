@@ -48,10 +48,14 @@ export default {
   "searchTable.query.completed": "查询完成",
   "searchTable.query.error": "查询失败",
   "searchTable.query.uploadFile": "上传文件",
+  "searchTable.query.manualInput": "手动输入",
   "searchTable.query.upload": "上传",
-  "searchTable.query.input": "手动输入",
-  "searchTable.query.inputPlaceholder": "输入数据，每行一个",
-  "searchTable.query.thread": "线程数",
+  "searchTable.query.input": "数据输入",
+  "searchTable.query.inputPlaceholder": "输入查询数据，每行一个",
+  "searchTable.query.selectFile": "选择文件",
+  "searchTable.query.uploadTip": "支持 .txt, .csv 文件格式",
+  "searchTable.query.fileTypeError": "请选择 .txt 或 .csv 文件",
+  "searchTable.query.fileReadError": "读取文件时出错",
 
   // 预上传功能
   "searchTable.preUpload.title": "预上传大文件",

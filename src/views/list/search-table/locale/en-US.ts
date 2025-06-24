@@ -47,10 +47,14 @@ export default {
   "searchTable.query.error": "Query failed",
 
   "searchTable.query.uploadFile": "Upload File",
+  "searchTable.query.manualInput": "Manual Input",
   "searchTable.query.upload": "Upload",
-  "searchTable.query.input": "Manual Input",
-  "searchTable.query.inputPlaceholder": "Enter data, one per line",
-  "searchTable.query.thread": "Number of Threads",
+  "searchTable.query.input": "Data Input",
+  "searchTable.query.inputPlaceholder": "Enter query data, one per line",
+  "searchTable.query.selectFile": "Select File",
+  "searchTable.query.uploadTip": "Support .txt, .csv file formats",
+  "searchTable.query.fileTypeError": "Please select a .txt or .csv file",
+  "searchTable.query.fileReadError": "Error reading file",
 
   // Pre-upload functionality
   "searchTable.preUpload.title": "Pre-upload Large Files",

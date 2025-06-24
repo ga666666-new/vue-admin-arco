@@ -93,26 +93,20 @@
             </div>
           </a-tab-pane>
 
-          <!-- 预上传标签页 -->
-          <a-tab-pane key="preUpload" :title="$t('searchTable.preUpload.title')">
-            <PreUpload @data-ready="onPreUploadDataReady" />
-          </a-tab-pane>
-
-          <!-- 传统上传标签页 -->
-          <a-tab-pane key="traditional" :title="$t('searchTable.query.upload')">
+          <!-- 手动输入标签页 -->
+          <a-tab-pane key="manual" :title="$t('searchTable.query.manualInput')">
             <a-form :model="queryForm">
               <a-form-item :label="t('searchTable.query.uploadFile')">
-                <a-upload :limit="1" :custom-request="handleCustomRequest" accept=".txt" :show-file-list="true">
-                  <a-button type="primary">选择 .txt 文件</a-button>
+                <a-upload :limit="1" :custom-request="handleCustomRequest" accept=".txt,.csv" :show-file-list="true">
+                  <a-button type="outline">{{ $t('searchTable.query.selectFile') }}</a-button>
                 </a-upload>
+                <div class="upload-tip">
+                  {{ $t('searchTable.query.uploadTip') }}
+                </div>
               </a-form-item>
               <a-form-item :label="t('searchTable.query.input')">
-                <a-textarea v-model="queryForm.inputText" :rows="4"
+                <a-textarea v-model="queryForm.inputText" :rows="6"
                   :placeholder="t('searchTable.query.inputPlaceholder')" />
-              </a-form-item>
-              <a-form-item :label="t('searchTable.query.thread')">
-                <a-select v-model="queryForm.threads" :options="threadOptions"
-                  :placeholder="t('searchTable.query.thread')" />
               </a-form-item>
             </a-form>
           </a-tab-pane>
@@ -144,7 +138,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { computed, reactive, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import PreUpload from './components/PreUpload.vue'
+
 
 const userStore = useUserStore()
 
@@ -169,15 +163,11 @@ const formModel = ref(generateFormModel())
 const size = ref<SizeProps>('medium')
 
 const queryForm = reactive({
-  inputMethod: 'text' as 'upload' | 'text',
   inputText: '',
-  threads: 1,
 })
 
 // 标签页相关
 const activeTab = ref('savedFiles')
-const preUploadData = ref<string[]>([])
-const isUsingPreUpload = ref(false)
 
 // 已保存文件相关
 interface SavedFile {
@@ -199,20 +189,15 @@ const resetInput = () => {
   queryForm.inputText = ''
 }
 
-const threadOptions = computed(() => {
-  const maxThreads = navigator.hardwareConcurrency || 4 // Fallback to 4 if not supported
-  return Array.from({ length: maxThreads }, (_, i) => ({
-    label: `${i + 1} Thread${i + 1 > 1 ? 's' : ''}`,
-    value: i + 1,
-  }))
-})
+
 
 const handleCustomRequest = (option: any) => {
   const { onProgress, onError, onSuccess, fileItem, name } = option
 
-  // 验证文件类型
-  if (fileItem.file.type !== 'text/plain') {
-    onError(new Error('请选择一个 .txt 文件'))
+  // 验证文件扩展名
+  const fileName = fileItem.file.name.toLowerCase()
+  if (!fileName.endsWith('.txt') && !fileName.endsWith('.csv')) {
+    onError(new Error(t('searchTable.query.fileTypeError')))
     return
   }
 
@@ -221,15 +206,17 @@ const handleCustomRequest = (option: any) => {
 
   reader.onload = (e) => {
     const content = e.target?.result as string
-    queryForm.inputText = content
-    onSuccess({ content })
+    // 过滤空行
+    const lines = content.split('\n').filter(line => line.trim())
+    queryForm.inputText = lines.join('\n')
+    onSuccess({ content: queryForm.inputText })
   }
 
   reader.onerror = () => {
-    onError(new Error('读取文件时出错'))
+    onError(new Error(t('searchTable.query.fileReadError')))
   }
 
-  reader.readAsText(fileItem.file) // 按文本格式读取文件
+  reader.readAsText(fileItem.file, 'utf-8') // 指定UTF-8编码
 }
 
 const basePagination: Pagination = {
@@ -369,13 +356,8 @@ const handleClick = (record: any) => {
   }
 }
 const handleOk = () => {
-  // 如果是预上传标签页，不执行传统处理逻辑
-  if (activeTab.value === 'preUpload') {
-    return
-  }
-
   visible.value = false
-  const lines = queryForm.inputText.replaceAll('\r', '').split('\n')
+  const lines = queryForm.inputText.replaceAll('\r', '').split('\n').filter(line => line.trim())
 
   if (lines.length === 0) {
     return
@@ -403,50 +385,14 @@ const handleOk = () => {
 }
 const handleCancel = () => {
   visible.value = false
-  queryForm.inputMethod = 'text'
   queryForm.inputText = ''
-  queryForm.threads = 1
   activeTab.value = 'savedFiles'
-  isUsingPreUpload.value = false
-  preUploadData.value = []
   selectedSavedFile.value = null
 }
 
 // 标签页切换处理
 const onTabChange = (key: string) => {
   activeTab.value = key
-  if (key === 'preUpload') {
-    isUsingPreUpload.value = false
-  }
-}
-
-// 预上传数据准备完成处理
-const onPreUploadDataReady = (data: string[]) => {
-  preUploadData.value = data
-  isUsingPreUpload.value = true
-
-  // 自动关闭模态框并开始处理
-  visible.value = false
-
-  try {
-    // 生成一个UUID
-    const id = uuidv4()
-
-    // 存储数据到localStorage
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(id, JSON.stringify(data))
-    }
-
-    const typeId = (route.params.id as string | undefined) || (route.meta.id as string | number)
-
-    // 跳转到结果页面
-    router.push({
-      name: 'Result',
-      query: { id, serviceId: serviceId.value, typeId },
-    })
-  } catch (error) {
-    console.error('❌ 处理预上传数据时出错:', error)
-  }
 }
 
 // 已保存文件相关方法
@@ -716,5 +662,12 @@ export default {
   :deep(.arco-textarea) {
     font-family: 'Courier New', monospace;
   }
+}
+
+.upload-tip {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-top: 4px;
+  line-height: 1.4;
 }
 </style>
