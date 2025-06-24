@@ -274,58 +274,74 @@ const readFileAsText = (file: File): Promise<string> => {
   })
 }
 
-// 处理单个文件（桌面应用场景）
-const processFile = async (uploadFile: UploadFile) => {
+// 通过ID处理单个文件（确保响应式更新）
+const processFileById = async (fileId: string) => {
+  const fileIndex = uploadedFiles.value.findIndex(f => f.id === fileId)
+  if (fileIndex === -1) {
+    console.error('❌ 找不到文件:', fileId)
+    return
+  }
+
+  const uploadFile = uploadedFiles.value[fileIndex]
   console.log('📁 开始处理文件:', uploadFile.name)
+
   try {
-    uploadFile.status = 'uploading'
-    uploadFile.progress = 10
+    // 使用响应式更新方式
+    uploadedFiles.value[fileIndex] = { ...uploadFile, status: 'uploading', progress: 10 }
+    await nextTick()
 
     // 读取文件内容
     const text = await readFileAsText(uploadFile.file)
-    uploadFile.progress = 40
+    uploadedFiles.value[fileIndex] = { ...uploadedFiles.value[fileIndex], progress: 40 }
+    await nextTick()
 
     // 解析文件内容
     const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
     const validLines = lines.filter((line) => line.trim().length > 0)
 
-    uploadFile.progress = 70
-    uploadFile.totalLines = lines.length
-    uploadFile.validLines = validLines.length
-    uploadFile.data = validLines
+    uploadedFiles.value[fileIndex] = {
+      ...uploadedFiles.value[fileIndex],
+      progress: 70,
+      totalLines: lines.length,
+      validLines: validLines.length,
+      data: validLines
+    }
+    await nextTick()
 
     // 模拟文件复制到应用目录的过程
     await new Promise(resolve => setTimeout(resolve, 300))
-    uploadFile.progress = 90
+    uploadedFiles.value[fileIndex] = { ...uploadedFiles.value[fileIndex], progress: 90 }
+    await nextTick()
 
     // 完成处理
-    uploadFile.progress = 100
-    uploadFile.status = 'success'
+    uploadedFiles.value[fileIndex] = {
+      ...uploadedFiles.value[fileIndex],
+      progress: 100,
+      status: 'success'
+    }
+    await nextTick()
 
     console.log('✅ 文件处理完成:', {
-      name: uploadFile.name,
-      status: uploadFile.status,
-      totalLines: uploadFile.totalLines,
-      validLines: uploadFile.validLines
+      name: uploadedFiles.value[fileIndex].name,
+      status: uploadedFiles.value[fileIndex].status,
+      totalLines: uploadedFiles.value[fileIndex].totalLines,
+      validLines: uploadedFiles.value[fileIndex].validLines
     })
 
-    // 确保响应式更新
-    await nextTick()
+    console.log('🔄 处理完成后，canSave:', canSave.value)
 
-    // 手动触发响应式更新
-    uploadedFiles.value = [...uploadedFiles.value]
-
-    console.log('🔄 强制触发响应式更新后，canSave:', canSave.value)
-
-    Message.success(`文件 ${uploadFile.name} 处理完成，共 ${uploadFile.validLines} 条有效数据`)
+    Message.success(`文件 ${uploadedFiles.value[fileIndex].name} 处理完成，共 ${uploadedFiles.value[fileIndex].validLines} 条有效数据`)
   } catch (error) {
     console.error('❌ 文件处理失败:', uploadFile.name, error)
-    uploadFile.status = 'error'
-    // 同样需要手动触发响应式更新
+    uploadedFiles.value[fileIndex] = { ...uploadedFiles.value[fileIndex], status: 'error' }
     await nextTick()
-    uploadedFiles.value = [...uploadedFiles.value]
     Message.error(`文件 ${uploadFile.name} 处理失败`)
   }
+}
+
+// 保留原函数用于重试功能
+const processFile = async (uploadFile: UploadFile) => {
+  return processFileById(uploadFile.id)
 }
 
 // 处理文件
@@ -334,7 +350,7 @@ const processFiles = async (files: File[]) => {
     return file.name.match(/\.(txt|csv)$/i) && file.size <= 100 * 1024 * 1024
   })
 
-  const filePromises = validFiles.map(async (file) => {
+  for (const file of validFiles) {
     const uploadFile: UploadFile = {
       id: uuidv4(),
       name: file.name,
@@ -347,12 +363,12 @@ const processFiles = async (files: File[]) => {
       data: [],
     }
 
+    // 添加到列表
     uploadedFiles.value.push(uploadFile)
-    await processFile(uploadFile)
-    return uploadFile
-  })
 
-  await Promise.all(filePromises)
+    // 处理单个文件
+    await processFileById(uploadFile.id)
+  }
 }
 
 // 拖拽事件处理
