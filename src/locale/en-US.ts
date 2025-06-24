@@ -28,13 +28,66 @@ import localeUserSetting from '@/views/user/setting/locale/en-US'
 /** simple end */
 import localeSettings from './en-US/settings'
 
+// File Manager Localization
+const localeFileManager = {
+  // File Import related
+  'fileManager.upload.title': 'File Import',
+  'fileManager.upload.desktopTip': 'Files will be saved to application data directory for reuse. Support drag & drop or click to select.',
+  'fileManager.upload.dragTip': 'Drag files here, or click to select files',
+  'fileManager.upload.fileLimit': 'Support .txt, .csv files, max 100MB per file',
+  'fileManager.upload.currentFiles': 'Current Import Files',
+  'fileManager.upload.totalLines': 'Total Lines',
+  'fileManager.upload.validLines': 'Valid Lines',
+  'fileManager.upload.preview': 'Preview',
+  'fileManager.upload.delete': 'Delete',
+  'fileManager.upload.uploading': 'Processing...',
+  'fileManager.upload.uploadSuccess': 'Process Successful',
+  'fileManager.upload.uploadFailed': 'Process Failed',
+  'fileManager.upload.retry': 'Retry',
+  'fileManager.upload.saveName': 'Dataset Name',
+  'fileManager.upload.saveNameRequired': 'Please enter dataset name',
+  'fileManager.upload.saveNamePlaceholder': 'Enter dataset name',
+  'fileManager.upload.description': 'Description',
+  'fileManager.upload.descriptionPlaceholder': 'Enter description (optional)',
+  'fileManager.upload.mergeInfo': 'Will merge data from {count} files, automatically deduplicated before saving',
+  'fileManager.upload.save': 'Save to Local',
+  'fileManager.upload.clear': 'Clear',
+  'fileManager.upload.saveSuccess': 'Save to Local Successful',
+  'fileManager.upload.saveError': 'Save Failed',
+
+  // Saved datasets related
+  'fileManager.saved.title': 'Saved Datasets',
+  'fileManager.saved.empty': 'No saved datasets yet',
+  'fileManager.saved.refresh': 'Refresh',
+  'fileManager.saved.totalLines': 'Total Lines',
+  'fileManager.saved.createdAt': 'Created At',
+  'fileManager.saved.description': 'Description',
+  'fileManager.saved.preview': 'Preview',
+  'fileManager.saved.edit': 'Edit',
+  'fileManager.saved.delete': 'Delete',
+  'fileManager.saved.deleteSuccess': 'Delete Successful',
+
+  // Preview related
+  'fileManager.preview.title': 'File Preview',
+  'fileManager.preview.close': 'Close',
+
+  // Edit related
+  'fileManager.edit.title': 'Edit Dataset Information',
+  'fileManager.edit.name': 'Name',
+  'fileManager.edit.nameRequired': 'Please enter dataset name',
+  'fileManager.edit.description': 'Description',
+  'fileManager.edit.updateSuccess': 'Update Successful',
+}
+
 export default {
   'menu.dashboard': 'Dashboard',
   'menu.server.dashboard': 'Dashboard-Server',
   'menu.server.workplace': 'Workplace-Server',
   'menu.server.monitor': 'Monitor-Server',
+  'menu.fileManager': 'File Manager',
+  'menu.fileManager.upload': 'File Import',
   'menu.list': 'List',
-  'menu.result': 'Result',
+  'menu.result': 'Index',
   'menu.exception': 'Exception',
   'menu.form': 'Form',
   'menu.profile': 'Profile',
@@ -65,4 +118,5 @@ export default {
   ...localeUserInfo,
   ...localeUserSetting,
   /** simple end */
+  ...localeFileManager,
 }

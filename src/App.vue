@@ -6,11 +6,11 @@
 </template>
 
 <script lang="ts" setup>
-import GlobalSetting from '@/components/global-setting/index.vue'
-import useLocale from '@/hooks/locale'
-import enUS from '@arco-design/web-vue/es/locale/lang/en-us'
-import zhCN from '@arco-design/web-vue/es/locale/lang/zh-cn'
-import { computed } from 'vue'
+import GlobalSetting from '@/components/global-setting/index.vue';
+import useLocale from '@/hooks/locale';
+import enUS from '@arco-design/web-vue/es/locale/lang/en-us';
+import zhCN from '@arco-design/web-vue/es/locale/lang/zh-cn';
+import { computed } from 'vue';
 
 const { currentLocale } = useLocale()
 const locale = computed(() => {

@@ -5,39 +5,21 @@
     </div>
     <a-layout>
       <a-layout>
-        <a-layout-sider
-          v-if="renderMenu"
-          v-show="!hideMenu"
-          class="layout-sider"
-          :breakpoint="'xl'"
-          :collapsible="true"
-          :width="menuWidth"
-          :style="{ paddingTop: navbar ? '60px' : '' }"
-          :hide-trigger="true"
-          @collapse="setCollapsed"
-        >
+        <a-layout-sider v-if="renderMenu" v-show="!hideMenu" class="layout-sider" :breakpoint="'xl'" :collapsible="true"
+          :width="menuWidth" :style="{ paddingTop: navbar ? '60px' : '' }" :hide-trigger="true"
+          @collapse="setCollapsed">
           <div class="menu-wrapper">
             <div class="left-side">
               <a-space>
-                <img
-                  alt="logo"
-                  src="//p3-armor.byteimg.com/tos-cn-i-49unhts6dw/dfdba5317c0c20ce20e64fac803d52bc.svg~tplv-49unhts6dw-image.image"
-                />
-                <a-typography-title>Vue Admin Arco</a-typography-title>
+                <img alt="logo" src="https://imei.top/favicon.ico" />
+                <a-typography-title>Apple Assistant</a-typography-title>
               </a-space>
             </div>
             <Menu />
           </div>
         </a-layout-sider>
-        <a-drawer
-          v-if="hideMenu"
-          :visible="drawerVisible"
-          placement="left"
-          :footer="false"
-          mask-closable
-          :closable="false"
-          @cancel="drawerCancel"
-        >
+        <a-drawer v-if="hideMenu" :visible="drawerVisible" placement="left" :footer="false" mask-closable
+          :closable="false" @cancel="drawerCancel">
           <Menu />
         </a-drawer>
         <a-layout class="layout-content" :style="paddingStyle">
@@ -208,7 +190,7 @@ onMounted(() => {
       }
     }
 
-    + .layout-content {
+    +.layout-content {
       .layout-navbar {
         left: 50px !important;
 

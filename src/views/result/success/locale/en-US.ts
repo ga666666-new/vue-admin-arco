@@ -1,5 +1,5 @@
 export default {
-  'menu.result.success': 'Success',
+  'menu.result.success': 'Introduce',
   'success.result.title': 'Submit Success',
   'success.result.subTitle': 'Submit form success!',
   'success.result.printResult': 'Print result',

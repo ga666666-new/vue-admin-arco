@@ -3,10 +3,10 @@ import { clearToken, setToken } from '@/utils/auth'
 import { removeRouteListener } from '@/utils/route-listener'
 import { defineStore } from 'pinia'
 import useAppStore from '../app'
-import { UserState } from './types'
+import { ResultState } from './types'
 
-const useUserStore = defineStore('user', {
-  state: (): UserState => ({
+const resultStore = defineStore('result', {
+  state: (): ResultState => ({
     name: undefined,
     avatar: undefined,
     job: undefined,
@@ -22,7 +22,6 @@ const useUserStore = defineStore('user', {
     registrationDate: undefined,
     accountId: undefined,
     certification: undefined,
-    role: '',
     id: undefined,
     group: undefined,
     password: undefined,
@@ -61,64 +60,22 @@ const useUserStore = defineStore('user', {
   }),
 
   getters: {
-    userInfo(state: UserState): UserState {
+    resultInfo(state: ResultState): ResultState {
       return { ...state }
     },
   },
 
   actions: {
-    switchRoles() {
-      return new Promise((resolve) => {
-        this.role = this.role === 'user' ? 'admin' : 'user'
-        resolve(this.role)
-      })
-    },
     // Set user's information
-    setInfo(partial: Partial<UserState>) {
+    setInfo(partial: Partial<ResultState>) {
       this.$patch(partial)
     },
 
     // Reset user's information
     resetInfo() {
       this.$reset()
-    },
-
-    // Get user's information
-    async info() {
-      const res = await getUserInfo()
-
-      this.setInfo(res.data)
-    },
-
-    // Login
-    async login(loginForm: LoginData) {
-      try {
-        const res = await userLogin(loginForm)
-        setToken(res.data.apikey)
-        this.setInfo(res.data)
-        console.log(res.data);
-
-      } catch (err) {
-        clearToken()
-        throw err
-      }
-    },
-    logoutCallBack() {
-      const appStore = useAppStore()
-      this.resetInfo()
-      clearToken()
-      removeRouteListener()
-      appStore.clearServerMenu()
-    },
-    // Logout
-    async logout() {
-      try {
-        await userLogout()
-      } finally {
-        this.logoutCallBack()
-      }
-    },
+    }
   },
 })
 
-export default useUserStore
+export default resultStore

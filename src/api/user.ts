@@ -3,15 +3,15 @@ import axios from 'axios'
 import type { RouteRecordNormalized } from 'vue-router'
 
 export interface LoginData {
-  username: string
-  password: string
+  key: string
 }
 
 export interface LoginRes {
   token: string
 }
 export function login(data: LoginData) {
-  return axios.post<LoginRes>('/api/user/login', data)
+  // return axios.get(`https://imei.top/software/user?key=${data.key}`)
+  return axios.get(`http://223.254.128.13:4000/software/user?key=${data.key}`)
 }
 
 export function logout() {

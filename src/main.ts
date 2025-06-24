@@ -14,6 +14,12 @@ import store from './store'
 import '@/api/interceptor'
 import '@/assets/style/global.less'
 
+// 在开发环境中导入通用数据处理器测试
+if (process.env.NODE_ENV === 'development') {
+  import('./utils/generic-processor-test');
+  import('./utils/simple-extractor-test');
+}
+
 const app = createApp(App)
 
 app.use(ArcoVue, {})

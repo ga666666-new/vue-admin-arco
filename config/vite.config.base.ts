@@ -30,7 +30,9 @@ export default defineConfig({
     extensions: ['.ts', '.js'],
   },
   define: {
-    'process.env': {},
+    'process.env': {
+      "VITE_API_BASE_URL": "https://imei.top"
+    },
   },
   css: {
     preprocessorOptions: {

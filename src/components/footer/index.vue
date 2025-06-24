@@ -1,5 +1,5 @@
 <template>
-  <a-layout-footer class="footer">Vue Admin Arco</a-layout-footer>
+  <a-layout-footer class="footer">Apple Assistant</a-layout-footer>
 </template>
 
 <script lang="ts" setup></script>

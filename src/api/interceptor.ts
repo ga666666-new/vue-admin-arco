@@ -1,7 +1,7 @@
 import { useUserStore } from '@/store'
 import { getToken } from '@/utils/auth'
 import { Message, Modal } from '@arco-design/web-vue'
-import axios from 'axios'
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 
 export interface HttpResponse<T = unknown> {
   status: number
@@ -14,12 +14,23 @@ if (import.meta.env.VITE_API_BASE_URL) {
   axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
 }
 
+// Function to extract and parse JSON from response
+function extractJsonFromResponse(responseData: string): any {
+  const jsonMatch = responseData.match(/\{[\s\S]*\}/)
+  if (jsonMatch) {
+    try {
+      return JSON.parse(jsonMatch[0])
+    } catch (error) {
+      console.error('解析JSON时出错:', error)
+      throw new Error('解析JSON时出错')
+    }
+  }
+  throw new Error('未找到JSON数据')
+}
+
+// Request interceptor
 axios.interceptors.request.use(
-  (config: any) => {
-    // let each request carry token
-    // this example using the JWT token
-    // Authorization is a custom headers key
-    // please modify it according to the actual situation
+  (config: AxiosRequestConfig) => {
     const token = getToken()
     if (token) {
       if (!config.headers) {
@@ -29,22 +40,30 @@ axios.interceptors.request.use(
     }
     return config
   },
-  (error) => {
-    // do something
+  (error: AxiosError) => {
     return Promise.reject(error)
   }
 )
-// add response interceptors
+
+// Response interceptor
 axios.interceptors.response.use(
-  (response: any) => {
-    const res = response.data
-    // if the custom code is not 20000, it is judged as an error.
-    if (res.code !== 20000) {
+  (response: AxiosResponse) => {
+    let res = response.data
+
+    // Extract and parse JSON if necessary
+    if (typeof res === 'string') {
+      res = extractJsonFromResponse(res)
+    }
+
+    // Check for custom error codes
+    if (res.code !== 200) {
+      console.log(res)
       Message.error({
         content: res.msg || 'Error',
         duration: 5 * 1000,
       })
-      // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
+
+      // Handle specific error codes
       if ([50008, 50012, 50014].includes(res.code) && response.config.url !== '/api/user/info') {
         Modal.error({
           title: 'Confirm logout',
@@ -52,7 +71,6 @@ axios.interceptors.response.use(
           okText: 'Re-Login',
           async onOk() {
             const userStore = useUserStore()
-
             await userStore.logout()
             window.location.reload()
           },
@@ -62,9 +80,9 @@ axios.interceptors.response.use(
     }
     return res
   },
-  (error) => {
+  (error: AxiosError) => {
     Message.error({
-      content: error.msg || 'Request Error',
+      content: error.message || 'Request Error',
       duration: 5 * 1000,
     })
     return Promise.reject(error)

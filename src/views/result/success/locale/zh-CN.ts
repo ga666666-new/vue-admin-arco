@@ -1,5 +1,5 @@
 export default {
-  'menu.result.success': '成功页',
+  'menu.result.success': '介绍',
   'success.result.title': '提交成功',
   'success.result.subTitle': '表单提交成功！',
   'success.result.printResult': '打印结果',

@@ -2,22 +2,19 @@
   <div class="navbar">
     <div class="left-side">
       <a-space>
-        <icon-menu-fold
-          v-if="!topMenu && appStore.device === 'mobile'"
-          style="font-size: 22px; cursor: pointer"
-          @click="toggleDrawerMenu"
-        />
+        <icon-menu-fold v-if="!topMenu && appStore.device === 'mobile'" style="font-size: 22px; cursor: pointer"
+          @click="toggleDrawerMenu" />
       </a-space>
     </div>
     <ul class="right-side">
       <li>
-        <a-tooltip :content="$t('settings.search')">
-          <a-button class="nav-btn" type="outline" :shape="'circle'">
-            <template #icon>
-              <icon-search />
-            </template>
-          </a-button>
-        </a-tooltip>
+        {{ $t('settings.cpu') }}: {{ cpuCores }}
+      </li>
+      <li>
+        {{ $t('settings.thread') }}: {{ cpuCores }}
+      </li>
+      <li>
+        {{ $t('settings.total') }}:{{ userStore.total }}
       </li>
       <li>
         <a-tooltip :content="$t('settings.language')">
@@ -40,7 +37,8 @@
         </a-dropdown>
       </li>
       <li>
-        <a-tooltip :content="theme === 'light' ? $t('settings.navbar.theme.toDark') : $t('settings.navbar.theme.toLight')">
+        <a-tooltip
+          :content="theme === 'light' ? $t('settings.navbar.theme.toDark') : $t('settings.navbar.theme.toLight')">
           <a-button class="nav-btn" type="outline" :shape="'circle'" @click="handleToggleTheme">
             <template #icon>
               <icon-moon-fill v-if="theme === 'dark'" />
@@ -49,107 +47,13 @@
           </a-button>
         </a-tooltip>
       </li>
-      <li>
-        <a-tooltip :content="$t('settings.navbar.alerts')">
-          <div class="message-box-trigger">
-            <a-badge :count="9" dot>
-              <a-button class="nav-btn" type="outline" :shape="'circle'" @click="setPopoverVisible">
-                <icon-notification />
-              </a-button>
-            </a-badge>
-          </div>
-        </a-tooltip>
-        <a-popover
-          trigger="click"
-          :arrow-style="{ display: 'none' }"
-          :content-style="{ padding: 0, minWidth: '400px' }"
-          content-class="message-popover"
-        >
-          <div ref="refBtn" class="ref-btn"></div>
-          <template #content>
-            <message-box />
-          </template>
-        </a-popover>
-      </li>
-      <li>
-        <a-tooltip :content="isFullscreen ? $t('settings.navbar.screen.toExit') : $t('settings.navbar.screen.toFull')">
-          <a-button class="nav-btn" type="outline" :shape="'circle'" @click="toggleFullScreen">
-            <template #icon>
-              <icon-fullscreen-exit v-if="isFullscreen" />
-              <icon-fullscreen v-else />
-            </template>
-          </a-button>
-        </a-tooltip>
-      </li>
-      <li>
-        <a-tooltip :content="$t('settings.title')">
-          <a-button class="nav-btn" type="outline" :shape="'circle'" @click="setVisible">
-            <template #icon>
-              <icon-settings />
-            </template>
-          </a-button>
-        </a-tooltip>
-      </li>
+
       <li>
         <a-dropdown trigger="click">
           <a-avatar :size="32" :style="{ marginRight: '8px' }">
             <img alt="avatar" :src="avatar" />
           </a-avatar>
           <template #content>
-            <a-doption>
-              <a-space @click="switchGit">
-                <icon-github />
-                <span>开源地址</span>
-              </a-space>
-            </a-doption>
-            <a-doption>
-              <a-space @click="switchRoles">
-                <icon-tag />
-                <span>
-                  {{ $t('messageBox.switchRoles') }}
-                </span>
-              </a-space>
-            </a-doption>
-            <a-doption>
-              <a-space @click="$router.push({ name: 'info' })">
-                <icon-user />
-                <span>
-                  {{ $t('messageBox.userCenter') }}
-                </span>
-              </a-space>
-            </a-doption>
-            <a-doption>
-              <a-space @click="$router.push({ name: 'setting' })">
-                <icon-settings />
-                <span>
-                  {{ $t('messageBox.userSettings') }}
-                </span>
-              </a-space>
-            </a-doption>
-            <a-doption>
-              <a-space @click="open('/shop-vite')">
-                <icon-tag />
-                <span>shop vite 付费版本</span>
-              </a-space>
-            </a-doption>
-            <a-doption>
-              <a-space @click="open('/admin-plus')">
-                <icon-tag />
-                <span>admin plus 付费版本</span>
-              </a-space>
-            </a-doption>
-            <a-doption>
-              <a-space @click="open('/admin-pro')">
-                <icon-tag />
-                <span>admin pro 付费版本</span>
-              </a-space>
-            </a-doption>
-            <a-doption>
-              <a-space @click="open('/vue-admin-better')">
-                <icon-tag />
-                <span>admin better 开源版</span>
-              </a-space>
-            </a-doption>
             <a-doption>
               <a-space @click="handleLogout">
                 <icon-export />
@@ -171,22 +75,40 @@ import useUser from '@/hooks/user'
 import { LOCALE_OPTIONS } from '@/locale'
 import { useAppStore, useUserStore } from '@/store'
 import { Message } from '@arco-design/web-vue'
-import { useDark, useFullscreen, useToggle } from '@vueuse/core'
-import { computed, inject, ref } from 'vue'
-import MessageBox from '../message-box/index.vue'
+import {
+  useDark,
+  useFullscreen,
+  useToggle
+} from '@vueuse/core'
+import {
+  computed,
+  inject,
+  ref
+} from 'vue'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
-const { logout } = useUser()
-const { changeLocale, currentLocale }: any = useLocale()
-const { isFullscreen, toggle: toggleFullScreen } = useFullscreen()
+const {
+  logout
+} = useUser()
+const {
+  changeLocale,
+  currentLocale
+}: any = useLocale()
+const {
+  isFullscreen,
+  toggle: toggleFullScreen
+} = useFullscreen()
 const locales = [...LOCALE_OPTIONS]
 const avatar = computed(() => {
-  return userStore.avatar
+  return "https://imei.top/favicon.ico"
 })
 const theme = computed(() => {
   return appStore.theme
 })
+
+const cpuCores = ref(navigator.hardwareConcurrency || 0)
+
 const topMenu = computed(() => appStore.topMenu && appStore.menu)
 const isDark = useDark({
   selector: 'body',
@@ -204,7 +126,9 @@ const handleToggleTheme = () => {
   toggleTheme()
 }
 const setVisible = () => {
-  appStore.updateSettings({ globalSettings: true })
+  appStore.updateSettings({
+    globalSettings: true
+  })
 }
 const refBtn = ref()
 const triggerBtn = ref()
@@ -240,7 +164,7 @@ const open = (val: string) => {
 }
 </script>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .navbar {
   display: flex;
   justify-content: space-between;

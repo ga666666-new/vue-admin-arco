@@ -1,8 +1,147 @@
 export default {
-  'menu.list.searchTable': '查询表格',
+  'menu.list.searchTable': '批量查询',
+  "menu.list.28": "Apple查询服务【中文】",
+  "menu.list.48": "Apple查询服务【英文】",
+  "menu.list.25": "安卓查询服务",
+  "menu.list.79": "Apple组合查询",
+  "menu.list.44": "全球黑名单查询",
+  "menu.list.30": "美国ATT服务",
+  "menu.list.32": "美国T-Mobile服务",
+  "menu.list.86": "美国Verizon服务",
+  "menu.list.67": "美国TracFone官解",
+  "menu.list.41": "日本服务",
+  "menu.list.27": "摩托罗拉服务",
+  "menu.list.39": "HTC服务",
+  "menu.list.51": "Apple高级服务",
+  "menu.list.74": "超雪Esim二维码",
+  "menu.list.82": "测试接口请勿提交",
+  "menu.list.89": "专用服务",
+  "menu.list.result": "结果页",
+
+
+  'searchTable.form.name': '服务名称',
+  'searchTable.form.state': '状态',
+  'searchTable.form.state.active': '启用',
+  'searchTable.form.state.inactive': '禁用',
+  'searchTable.actions.search': '搜索',
+  'searchTable.actions.reset': '重置',
+  'searchTable.columns.id': 'ID',
+  'searchTable.columns.name': '名称',
+  'searchTable.columns.name_en': '名称（英文）',
+  'searchTable.columns.consume': '费用',
+  'searchTable.columns.time_taken': '查询时间',
+  'searchTable.columns.state': '状态',
+  'searchTable.columns.method': '方法',
+  'searchTable.columns.operations': '操作',
+  'searchTable.columns.operations.view': '查看',
+  'searchTable.columns.operations.use': '使用',
+
+  'searchTable.columns.sn': "SN/IMEI",
+  'searchTable.columns.result': "结果",
+  'searchTable.columns.save': "保存",
+
+
+  "searchTable.query.title": "批量查询",
+  "searchTable.query.submit": "执行查询",
+  "searchTable.query.cancel": "取消",
+  "searchTable.query.noInput": "请输入查询数据",
+  "searchTable.query.completed": "查询完成",
+  "searchTable.query.error": "查询失败",
+  "searchTable.query.uploadFile": "上传文件",
+  "searchTable.query.upload": "上传",
+  "searchTable.query.input": "手动输入",
+  "searchTable.query.inputPlaceholder": "输入数据，每行一个",
+  "searchTable.query.thread": "线程数",
+
+  // 预上传功能
+  "searchTable.preUpload.title": "预上传大文件",
+  "searchTable.preUpload.description": "对于大数据量，建议使用预上传功能以获得更好的性能",
+  "searchTable.preUpload.dragTip": "拖拽文件到此处，或点击选择文件",
+  "searchTable.preUpload.fileLimit": "支持 .txt, .csv 文件，单个文件最大 100MB",
+  "searchTable.preUpload.uploading": "正在上传...",
+  "searchTable.preUpload.uploadSuccess": "上传成功",
+  "searchTable.preUpload.uploadFailed": "上传失败",
+  "searchTable.preUpload.pause": "暂停",
+  "searchTable.preUpload.resume": "继续",
+  "searchTable.preUpload.cancel": "取消",
+  "searchTable.preUpload.retry": "重试",
+  "searchTable.preUpload.preview": "预览",
+  "searchTable.preUpload.merge": "合并文件",
+  "searchTable.preUpload.processing": "处理中...",
+  "searchTable.preUpload.processComplete": "处理完成",
+  "searchTable.preUpload.totalLines": "总行数",
+  "searchTable.preUpload.validLines": "有效行数",
+  "searchTable.preUpload.filePreview": "文件预览（前10行）",
+  "searchTable.preUpload.usePreUpload": "使用预上传数据",
+  "searchTable.preUpload.clearData": "清空数据",
+  "searchTable.preUpload.delete": "删除",
+  "searchTable.preUpload.close": "关闭",
+  "searchTable.preUpload.uploadedFiles": "已上传文件",
+
+  // 已保存数据集相关
+  'searchTable.savedFiles.title': '已保存数据集',
+  'searchTable.savedFiles.empty': '暂无已保存的数据集',
+  'searchTable.savedFiles.goUpload': '去导入文件',
+  'searchTable.savedFiles.selectTip': '选择要使用的已保存数据集',
+  'searchTable.savedFiles.refresh': '刷新',
+  'searchTable.savedFiles.totalLines': '总行数',
+  'searchTable.savedFiles.preview': '预览',
+  'searchTable.savedFiles.use': '使用该数据集',
+  'searchTable.savedFiles.clearSelection': '取消选择',
+  'searchTable.savedFiles.previewTitle': '数据集预览',
+  'searchTable.savedFiles.closePreview': '关闭',
+
+  // 批量处理功能
+  'searchTable.batch.title': '批量处理配置',
+  'searchTable.batch.threadCount': '并发线程数',
+  'searchTable.batch.totalQuery': '总查询数',
+  'searchTable.batch.start': '开始批量查询',
+  'searchTable.batch.processing': '处理中...',
+  'searchTable.batch.stop': '停止',
+  'searchTable.batch.noData': '没有数据需要处理',
+  'searchTable.batch.completed': '批量处理完成！成功处理 {count} 条数据',
+  'searchTable.batch.completedWithErrors': '批量处理完成！成功: {success}, 失败: {failed}',
+  'searchTable.batch.stopped': '批量处理已停止',
+  'searchTable.batch.failed': '批量处理失败',
+
+  // 状态显示
+  'searchTable.status.pending': '待加载',
+  'searchTable.status.loading': '加载中',
+  'searchTable.status.completed': '已完成',
+  'searchTable.status.error': '失败',
+  'searchTable.status.title': '状态',
+
+  // 进度统计
+  'searchTable.progress.total': '总数',
+  'searchTable.progress.completed': '完成',
+  'searchTable.progress.failed': '失败',
+  'searchTable.progress.remaining': '剩余',
+
+  // 智能处理提示
+  'searchTable.smart.title': '已使用智能键值对提取器处理数据',
+  'searchTable.smart.processed': '处理了 {count} 条记录，生成了 {columns} 个动态列',
+  'searchTable.smart.tip': '表头使用提取的键名，数据已标准化展示',
+  'searchTable.smart.more': '更多...',
+
+  // 导出功能
+  'searchTable.export.excel': '导出Excel',
+  'searchTable.export.csv': '导出CSV',
+  'searchTable.export.data': '导出数据',
+  'searchTable.export.success': '导出成功',
+  'searchTable.export.failed': '导出失败',
+
+  // 统计信息
+  'searchTable.statistics.totalRecords': '总记录数',
+  'searchTable.statistics.fieldCount': '字段数',
+
+  // 数据处理状态
+  'searchTable.processing.failed': '数据处理失败',
+  'searchTable.processing.error': '处理失败',
+
+
+
   'searchTable.form.number': '集合编号',
   'searchTable.form.number.placeholder': '请输入集合编号',
-  'searchTable.form.name': '集合名称',
   'searchTable.form.name.placeholder': '请输入集合名称',
   'searchTable.form.contentType': '内容体裁',
   'searchTable.form.contentType.img': '图文',
@@ -24,14 +163,12 @@ export default {
   // columns
   'searchTable.columns.index': '#',
   'searchTable.columns.number': '集合编号',
-  'searchTable.columns.name': '集合名称',
+
   'searchTable.columns.contentType': '内容体裁',
   'searchTable.columns.filterType': '筛选方式',
   'searchTable.columns.count': '内容量',
   'searchTable.columns.createdTime': '创建时间',
   'searchTable.columns.status': '状态',
-  'searchTable.columns.operations': '操作',
-  'searchTable.columns.operations.view': '查看',
 
   // size
   'searchTable.size.mini': '迷你',
