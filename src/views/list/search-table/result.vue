@@ -129,11 +129,11 @@ import { useUserStore } from "@/store";
 import { getToken } from "@/utils/auth";
 import { TableColumnData } from "@arco-design/web-vue";
 import dayjs from "dayjs";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import * as XLSX from "xlsx";
-import { Message } from '@arco-design/web-vue'
+import { Message, Modal } from '@arco-design/web-vue'
 import { IconCheckCircle } from '@arco-design/web-vue/es/icon'
 
 // 导入数据处理工具
@@ -166,8 +166,8 @@ const columns = computed<TableColumnData[]>(() => {
   if (dynamicColumns.value.length > 0) {
     return [
       {
-        title: "ID",
-        dataIndex: "id",
+        title: t("searchTable.columns.sn"), // 使用SN/IMEI作为标题
+        dataIndex: "sn", // 使用sn字段
         width: 200,
         fixed: 'left' as const,
       },
@@ -408,7 +408,8 @@ const initializeBatchData = () => {
 
     // 添加占位数据到表格
     processedData.value.push({
-      id: line
+      id: line,
+      sn: line  // 同时设置sn字段用于显示
       // 其他字段将在处理过程中动态添加
     });
   });
@@ -485,6 +486,7 @@ const processSingleItem = async (line: string, index: number, pool: ConcurrencyP
           // 更新现有项目
           processedData.value[existingIndex] = {
             id: line,
+            sn: line,  // 确保sn字段用于显示
             ...keyValuePairs
           };
         }
@@ -517,6 +519,7 @@ const processSingleItem = async (line: string, index: number, pool: ConcurrencyP
       if (existingIndex !== -1) {
         processedData.value[existingIndex] = {
           id: line,
+          sn: line,  // 确保sn字段用于显示
           [t('searchTable.status.error')]: error?.message || t('searchTable.processing.error')
         };
       }
@@ -644,6 +647,55 @@ const stopBatchProcessing = () => {
   batchController = null;
 };
 
+// 导航守卫：防止在批量处理时意外离开
+onBeforeRouteLeave((to, from, next) => {
+  if (isBatchProcessing.value) {
+    // 使用 Modal 显示确认对话框
+    Modal.warning({
+      title: t('searchTable.navigation.confirmLeave'),
+      content: t('searchTable.navigation.processingWarning'),
+      okText: t('searchTable.navigation.stopAndLeave'),
+      cancelText: t('searchTable.navigation.continueProcessing'),
+      closable: true, // 显示右上角的 X 关闭按钮
+      maskClosable: false, // 禁用点击遮罩关闭，确保用户必须明确选择
+      escToClose: false, // 禁用 ESC 键关闭，确保用户必须明确选择
+      onOk: () => {
+        // 停止批量处理并允许导航
+        stopBatchProcessing();
+        console.log('🚫 用户选择停止处理并离开页面');
+        next();
+      },
+      onCancel: () => {
+        // 取消导航，继续处理
+        console.log('✅ 用户选择继续处理');
+        next(false);
+      },
+      onClose: () => {
+        // 点击 X 按钮时，等同于取消操作，继续处理
+        console.log('❌ 用户点击关闭按钮，继续处理');
+        next(false);
+      }
+    });
+  } else {
+    // 没有批量处理，允许正常导航
+    next();
+  }
+});
+
+// 浏览器页面卸载保护
+const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  if (isBatchProcessing.value) {
+    event.preventDefault();
+    event.returnValue = t('searchTable.navigation.browserWarning');
+    return t('searchTable.navigation.browserWarning');
+  }
+};
+
+// 页面卸载时移除保护
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+});
+
 // 获取记录的批量处理状态
 const getBatchStatus = (record: any) => {
   const id = record.id || record.sn;
@@ -694,12 +746,12 @@ const initTable = async () => {
 const downloadCSV = () => {
   // 如果有处理后的数据，使用键值对数据导出
   if (processedData.value.length > 0 && dynamicColumns.value.length > 0) {
-    const headers = ["ID", ...dynamicColumns.value.map(col => col.title)];
+    const headers = [t("searchTable.columns.sn"), ...dynamicColumns.value.map(col => col.title)];
     const csvContent = [
       headers.join(","),
       ...processedData.value.map(item => {
         const row = [
-          `"${item.id}"`, // ID作为第一列
+          `"${item.sn || item.id}"`, // SN作为第一列
           ...dynamicColumns.value.map(col => {
             const value = item[col.dataIndex] || '';
             return `"${String(value).replace(/"/g, '""')}"`;
@@ -746,9 +798,9 @@ const downloadCSV = () => {
 const downloadExcel = () => {
   // 如果有处理后的数据，使用键值对数据导出
   if (processedData.value.length > 0 && dynamicColumns.value.length > 0) {
-    const headers = ["ID", ...dynamicColumns.value.map(col => col.title)];
+    const headers = [t("searchTable.columns.sn"), ...dynamicColumns.value.map(col => col.title)];
     const data = processedData.value.map(item => [
-      item.id, // ID作为第一列
+      item.sn || item.id, // SN作为第一列
       ...dynamicColumns.value.map(col => {
         const value = item[col.dataIndex];
         return value || '';
@@ -760,7 +812,7 @@ const downloadExcel = () => {
 
     // 设置列宽
     const colWidths = [
-      { wch: 20 }, // ID列
+      { wch: 20 }, // SN列
       ...dynamicColumns.value.map(col => ({
         wch: col.title === '设备图片' || col.title.includes('图片') ? 30 : 15
       }))
@@ -1060,6 +1112,9 @@ const handleExportCSV = (data: DeviceQueryResult[]) => {
 }
 
 onMounted(async () => {
+  // 添加浏览器关闭保护
+  window.addEventListener('beforeunload', handleBeforeUnload);
+
   await initTable();
 
   // 不自动执行fetchData，改为手动批量处理
@@ -1073,6 +1128,7 @@ onMounted(async () => {
   // 开发环境下的演示功能（可选）
   if (process.env.NODE_ENV === 'development') {
     console.log('🚀 开发模式：可在控制台使用 extractKeyValuePairs(data) 测试数据处理');
+    console.log('🛡️ 页面导航保护已启用，批量处理时将阻止意外离开');
   }
 });
 </script>

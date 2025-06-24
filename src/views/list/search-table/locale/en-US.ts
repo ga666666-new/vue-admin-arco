@@ -103,6 +103,13 @@ export default {
   'searchTable.batch.stopped': 'Batch processing stopped',
   'searchTable.batch.failed': 'Batch processing failed',
 
+  // Page navigation protection
+  'searchTable.navigation.confirmLeave': 'Confirm leaving this page?',
+  'searchTable.navigation.processingWarning': 'Batch processing is in progress. Leaving this page will lose all processing progress and data. Are you sure you want to leave?',
+  'searchTable.navigation.stopAndLeave': 'Stop processing and leave',
+  'searchTable.navigation.continueProcessing': 'Continue processing',
+  'searchTable.navigation.browserWarning': 'Batch processing is in progress. Closing this page will lose all data!',
+
   // Status display
   'searchTable.status.pending': 'Pending',
   'searchTable.status.loading': 'Loading',

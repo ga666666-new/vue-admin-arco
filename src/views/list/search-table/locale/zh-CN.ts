@@ -104,6 +104,13 @@ export default {
   'searchTable.batch.stopped': '批量处理已停止',
   'searchTable.batch.failed': '批量处理失败',
 
+  // 页面导航保护
+  'searchTable.navigation.confirmLeave': '确认离开页面？',
+  'searchTable.navigation.processingWarning': '批量处理正在进行中，离开页面将丢失所有处理进度和数据。确定要离开吗？',
+  'searchTable.navigation.stopAndLeave': '停止处理并离开',
+  'searchTable.navigation.continueProcessing': '继续处理',
+  'searchTable.navigation.browserWarning': '批量处理正在进行中，关闭页面将丢失所有数据！',
+
   // 状态显示
   'searchTable.status.pending': '待加载',
   'searchTable.status.loading': '加载中',
