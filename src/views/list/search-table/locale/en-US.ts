@@ -55,6 +55,11 @@ export default {
   "searchTable.query.uploadTip": "Support .txt, .csv file formats",
   "searchTable.query.fileTypeError": "Please select a .txt or .csv file",
   "searchTable.query.fileReadError": "Error reading file",
+  "searchTable.query.appendFile": "Append File",
+  "searchTable.query.currentLines": "current lines",
+  "searchTable.query.appendTip": "Appended file content will be merged with existing content, duplicates will be automatically removed",
+  "searchTable.query.appendResult": "Append completed! Added {added} lines, {duplicate} duplicates, total {total} lines",
+  "searchTable.query.appendSuccess": "Append successful! Added {added} lines, total {total} lines",
 
   // Pre-upload functionality
   "searchTable.preUpload.title": "Pre-upload Large Files",
@@ -93,6 +98,10 @@ export default {
   'searchTable.savedFiles.clearSelection': 'Clear Selection',
   'searchTable.savedFiles.previewTitle': 'Dataset Preview',
   'searchTable.savedFiles.closePreview': 'Close',
+  'searchTable.savedFiles.append': 'Append',
+  'searchTable.savedFiles.appendResult': 'Appended to "{fileName}"! Added {added} lines, {duplicate} duplicates, total {total} lines',
+  'searchTable.savedFiles.appendSuccess': 'Successfully appended to "{fileName}"! Added {added} lines, total {total} lines',
+  'searchTable.savedFiles.appendError': 'Error appending file',
 
   // Batch processing functionality
   'searchTable.batch.title': 'Batch Processing Configuration',
@@ -101,11 +110,18 @@ export default {
   'searchTable.batch.start': 'Start Batch Query',
   'searchTable.batch.processing': 'Processing...',
   'searchTable.batch.stop': 'Stop',
+  'searchTable.batch.pause': 'Pause',
+  'searchTable.batch.resume': 'Resume',
+  'searchTable.batch.paused': 'Batch processing paused',
+  'searchTable.batch.resumed': 'Batch processing resumed',
+  'searchTable.batch.continue': 'Continue Processing',
   'searchTable.batch.noData': 'No data to process',
+  'searchTable.batch.noUnfinishedTasks': 'No unfinished tasks',
   'searchTable.batch.completed': 'Batch processing completed! Successfully processed {count} records',
   'searchTable.batch.completedWithErrors': 'Batch processing completed! Success: {success}, Failed: {failed}',
   'searchTable.batch.stopped': 'Batch processing stopped',
   'searchTable.batch.failed': 'Batch processing failed',
+  'searchTable.batch.stateRestored': 'Batch processing state restored, you can continue processing',
 
   // Page navigation protection
   'searchTable.navigation.confirmLeave': 'Confirm leaving this page?',

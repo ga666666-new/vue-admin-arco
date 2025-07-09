@@ -66,6 +66,10 @@ const localeFileManager = {
   'fileManager.saved.edit': '编辑',
   'fileManager.saved.delete': '删除',
   'fileManager.saved.deleteSuccess': '删除成功',
+  'fileManager.saved.append': '追加',
+  'fileManager.saved.appendSuccess': '追加成功：向 {fileName} 添加了 {added} 行数据，总计 {total} 行',
+  'fileManager.saved.appendResult': '追加完成：向 {fileName} 添加了 {added} 行数据，其中 {duplicate} 行重复，总计 {total} 行',
+  'fileManager.saved.appendError': '追加失败',
 
   // 预览相关
   'fileManager.preview.title': '文件预览',

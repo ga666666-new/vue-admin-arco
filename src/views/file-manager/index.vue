@@ -142,6 +142,10 @@
                   <a-button size="mini" type="outline" @click="editSavedFile(savedFile)">
                     {{ $t('fileManager.saved.edit') }}
                   </a-button>
+                  <a-button size="mini" type="outline" @click="appendToSavedFile(savedFile)">
+                    <icon-plus />
+                    {{ $t('fileManager.saved.append') }}
+                  </a-button>
                   <a-button size="mini" type="outline" status="danger" @click="deleteSavedFile(savedFile, index)">
                     {{ $t('fileManager.saved.delete') }}
                   </a-button>
@@ -186,11 +190,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { v4 as uuidv4 } from 'uuid'
-import { Message } from '@arco-design/web-vue'
 import Breadcrumb from '@/components/breadcrumb/index.vue'
+import { Message } from '@arco-design/web-vue'
+import { v4 as uuidv4 } from 'uuid'
+import { computed, nextTick, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 // 文件接口定义
 interface UploadFile {
@@ -598,6 +602,115 @@ const deleteSavedFile = (savedFile: SavedFile, index: number) => {
   }
 
   Message.success(t('fileManager.saved.deleteSuccess'))
+}
+
+// 追加到已保存文件
+const appendToSavedFile = (savedFile: SavedFile) => {
+  console.log('➕ 追加到数据集:', {
+    id: savedFile.id,
+    name: savedFile.name,
+    currentLines: savedFile.totalLines
+  })
+
+  // 创建文件输入元素
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.txt,.csv'
+  input.style.display = 'none'
+  
+  input.onchange = (event: any) => {
+    const file = event.target.files[0]
+    if (!file) return
+    
+    // 验证文件扩展名
+    const fileName = file.name.toLowerCase()
+    if (!fileName.endsWith('.txt') && !fileName.endsWith('.csv')) {
+      Message.error(t('fileManager.upload.fileTypeError'))
+      return
+    }
+    
+    // 读取文件内容
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const content = e.target?.result as string
+      const newLines = content.split('\n').filter((line: string) => line.trim())
+      
+      // 获取现有内容
+      const existingLines = savedFile.data
+      
+      // 合并内容，去重
+      const allLines = [...existingLines, ...newLines]
+      const uniqueLines = Array.from(new Set(allLines))
+      
+      // 更新已保存文件
+      const updatedFile = {
+        ...savedFile,
+        data: uniqueLines,
+        totalLines: uniqueLines.length,
+        updatedAt: Date.now()
+      }
+      
+      // 更新localStorage中的已保存文件列表
+      try {
+        const savedFilesData = JSON.parse(localStorage.getItem('savedFiles') || '[]')
+        const updatedFiles = savedFilesData.map((f: SavedFile) => 
+          f.id === savedFile.id ? updatedFile : f
+        )
+        localStorage.setItem('savedFiles', JSON.stringify(updatedFiles))
+        
+        // 更新当前列表
+        savedFiles.value = updatedFiles
+        
+        // 显示追加结果
+        const addedCount = newLines.length
+        const duplicateCount = newLines.length - (uniqueLines.length - existingLines.length)
+        
+        if (duplicateCount > 0) {
+          Message.success(t('fileManager.saved.appendResult', { 
+            fileName: savedFile.name,
+            added: addedCount, 
+            duplicate: duplicateCount,
+            total: uniqueLines.length 
+          }))
+        } else {
+          Message.success(t('fileManager.saved.appendSuccess', { 
+            fileName: savedFile.name,
+            added: addedCount,
+            total: uniqueLines.length 
+          }))
+        }
+        
+        // 触发自定义事件通知其他页面
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('savedFilesUpdated', {
+            detail: { action: 'append', fileId: savedFile.id }
+          }))
+        }
+        
+        console.log('✅ 追加完成:', {
+          fileName: savedFile.name,
+          added: addedCount,
+          duplicate: duplicateCount,
+          total: uniqueLines.length
+        })
+        
+      } catch (error) {
+        console.error('❌ 追加文件时出错:', error)
+        Message.error(t('fileManager.saved.appendError'))
+      }
+    }
+    
+    reader.onerror = () => {
+      Message.error(t('fileManager.upload.fileReadError'))
+    }
+    
+    reader.readAsText(file, 'utf-8')
+  }
+  
+  // 触发文件选择
+  document.body.appendChild(input)
+  input.click()
+  document.body.removeChild(input)
 }
 
 // 加载已保存的文件

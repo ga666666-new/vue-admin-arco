@@ -56,6 +56,11 @@ export default {
   "searchTable.query.uploadTip": "支持 .txt, .csv 文件格式",
   "searchTable.query.fileTypeError": "请选择 .txt 或 .csv 文件",
   "searchTable.query.fileReadError": "读取文件时出错",
+  "searchTable.query.appendFile": "追加文件",
+  "searchTable.query.currentLines": "当前行数",
+  "searchTable.query.appendTip": "追加的文件内容会与现有内容合并，自动去重",
+  "searchTable.query.appendResult": "追加完成！新增 {added} 行，重复 {duplicate} 行，总计 {total} 行",
+  "searchTable.query.appendSuccess": "追加成功！新增 {added} 行，总计 {total} 行",
 
   // 预上传功能
   "searchTable.preUpload.title": "预上传大文件",
@@ -94,6 +99,10 @@ export default {
   'searchTable.savedFiles.clearSelection': '取消选择',
   'searchTable.savedFiles.previewTitle': '数据集预览',
   'searchTable.savedFiles.closePreview': '关闭',
+  'searchTable.savedFiles.append': '追加',
+  'searchTable.savedFiles.appendResult': '已向 "{fileName}" 追加完成！新增 {added} 行，重复 {duplicate} 行，总计 {total} 行',
+  'searchTable.savedFiles.appendSuccess': '已向 "{fileName}" 追加成功！新增 {added} 行，总计 {total} 行',
+  'searchTable.savedFiles.appendError': '追加文件时出错',
 
   // 批量处理功能
   'searchTable.batch.title': '批量处理配置',
@@ -102,11 +111,18 @@ export default {
   'searchTable.batch.start': '开始批量查询',
   'searchTable.batch.processing': '处理中...',
   'searchTable.batch.stop': '停止',
+  'searchTable.batch.pause': '暂停',
+  'searchTable.batch.resume': '恢复',
+  'searchTable.batch.paused': '批量处理已暂停',
+  'searchTable.batch.resumed': '批量处理已恢复',
+  'searchTable.batch.continue': '继续处理',
   'searchTable.batch.noData': '没有数据需要处理',
+  'searchTable.batch.noUnfinishedTasks': '没有未完成的任务',
   'searchTable.batch.completed': '批量处理完成！成功处理 {count} 条数据',
   'searchTable.batch.completedWithErrors': '批量处理完成！成功: {success}, 失败: {failed}',
   'searchTable.batch.stopped': '批量处理已停止',
   'searchTable.batch.failed': '批量处理失败',
+  'searchTable.batch.stateRestored': '已恢复批量处理状态，可以继续处理',
 
   // 页面导航保护
   'searchTable.navigation.confirmLeave': '确认离开页面？',

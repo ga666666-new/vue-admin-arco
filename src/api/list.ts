@@ -1,3 +1,4 @@
+import { withCache } from '@/utils/cache'
 import type { DescData } from '@arco-design/web-vue/es/descriptions/interface'
 import axios from 'axios'
 import qs from 'query-string'
@@ -67,11 +68,14 @@ export function queryRulesPresetList() {
   return axios.get('/api/list/rules-preset')
 }
 
-export function queryService(key: string | undefined | null) {
-
+// 原始queryService函数
+function _queryService(key: string | undefined | null) {
   // return axios.get(`https://imei.top/software/service?key=${apikey}`).then(res => res.data)
   return axios.get(key ? `http://223.254.128.13:4000/software/service?key=${key}` : `http://223.254.128.13:4000/software/service`).then(res => res.data)
 }
+
+// 带缓存的queryService函数
+export const queryService = withCache(_queryService, (key: string | undefined | null) => key)
 
 
 export function submitOrder(imei: string, key: string, sid: string, lang: string) {

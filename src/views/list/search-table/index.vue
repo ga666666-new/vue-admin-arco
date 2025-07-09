@@ -3,6 +3,7 @@
     :font="{ color: 'rgba(255, 0, 0, 0.3)', fontSize: 16 }">
     <Breadcrumb :items="['menu.list', `menu.list.${route.meta.id}`]" />
     <a-card class="general-card" :title="$t(`menu.list.${route.meta.id}`)">
+      
       <a-table row-key="id" :loading="loading" :pagination="pagination" :columns="columns as TableColumnData[]"
         :data="renderData" :bordered="false" :size="size" @page-change="onPageChange">
         <template #state="{ record }">
@@ -71,6 +72,10 @@
                       <a-button size="mini" type="text" @click.stop="previewSavedFile(savedFile)">
                         {{ $t('searchTable.savedFiles.preview') }}
                       </a-button>
+                      <a-button size="mini" type="text" @click.stop="appendToSavedFile(savedFile)">
+                        <icon-plus />
+                        {{ $t('searchTable.savedFiles.append') }}
+                      </a-button>
                     </div>
                     <div v-if="selectedSavedFile?.id === savedFile.id" class="selected-indicator">
                       <icon-check-circle-fill />
@@ -97,9 +102,39 @@
           <a-tab-pane key="manual" :title="$t('searchTable.query.manualInput')">
             <a-form :model="queryForm">
               <a-form-item :label="t('searchTable.query.uploadFile')">
-                <a-upload :limit="1" :custom-request="handleCustomRequest" accept=".txt,.csv" :show-file-list="true">
-                  <a-button type="outline">{{ $t('searchTable.query.selectFile') }}</a-button>
-                </a-upload>
+                <div class="upload-section">
+                  <a-upload 
+                    :limit="1" 
+                    :custom-request="handleCustomRequest" 
+                    accept=".txt,.csv" 
+                    :show-file-list="true"
+                    ref="uploadRef">
+                    <a-button type="outline">{{ $t('searchTable.query.selectFile') }}</a-button>
+                  </a-upload>
+                  
+                  <!-- 追加文件按钮 -->
+                  <div v-if="queryForm.inputText" class="append-section">
+                    <a-divider />
+                    <div class="append-header">
+                      <span>{{ $t('searchTable.query.appendFile') }}</span>
+                      <a-tag color="blue">{{ queryForm.inputText.split('\n').filter(line => line.trim()).length }} {{ $t('searchTable.query.currentLines') }}</a-tag>
+                    </div>
+                    <a-upload 
+                      :limit="1" 
+                      :custom-request="handleAppendRequest" 
+                      accept=".txt,.csv" 
+                      :show-file-list="true"
+                      ref="appendUploadRef">
+                      <a-button type="outline" size="small">
+                        <icon-plus />
+                        {{ $t('searchTable.query.appendFile') }}
+                      </a-button>
+                    </a-upload>
+                    <div class="upload-tip">
+                      {{ $t('searchTable.query.appendTip') }}
+                    </div>
+                  </div>
+                </div>
                 <div class="upload-tip">
                   {{ $t('searchTable.query.uploadTip') }}
                 </div>
@@ -132,10 +167,12 @@ import useLoading from '@/hooks/loading'
 import useLocale from '@/hooks/locale'
 import { useUserStore } from '@/store'
 import { Pagination } from '@/types/global'
+import { Message } from '@arco-design/web-vue'
+import { IconPlus } from '@arco-design/web-vue/es/icon'
 import type { TableColumnData } from '@arco-design/web-vue/es/table/interface'
 import dayjs from 'dayjs'
 import { v4 as uuidv4 } from 'uuid'
-import { computed, reactive, ref, watch, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -185,6 +222,10 @@ const selectedSavedFile = ref<SavedFile | null>(null)
 const savedFilePreviewVisible = ref(false)
 const savedFilePreviewContent = ref('')
 
+// 上传组件引用
+const uploadRef = ref()
+const appendUploadRef = ref()
+
 const resetInput = () => {
   queryForm.inputText = ''
 }
@@ -207,8 +248,64 @@ const handleCustomRequest = (option: any) => {
   reader.onload = (e) => {
     const content = e.target?.result as string
     // 过滤空行
-    const lines = content.split('\n').filter(line => line.trim())
+    const lines = content.split('\n').filter((line: string) => line.trim())
     queryForm.inputText = lines.join('\n')
+    onSuccess({ content: queryForm.inputText })
+  }
+
+  reader.onerror = () => {
+    onError(new Error(t('searchTable.query.fileReadError')))
+  }
+
+  reader.readAsText(fileItem.file, 'utf-8') // 指定UTF-8编码
+}
+
+// 追加文件处理函数
+const handleAppendRequest = (option: any) => {
+  const { onProgress, onError, onSuccess, fileItem, name } = option
+
+  // 验证文件扩展名
+  const fileName = fileItem.file.name.toLowerCase()
+  if (!fileName.endsWith('.txt') && !fileName.endsWith('.csv')) {
+    onError(new Error(t('searchTable.query.fileTypeError')))
+    return
+  }
+
+  // 使用 FileReader 读取文件内容
+  const reader = new FileReader()
+
+  reader.onload = (e) => {
+    const content = e.target?.result as string
+    // 过滤空行
+    const newLines = content.split('\n').filter((line: string) => line.trim())
+    
+    // 获取现有内容
+    const existingLines = queryForm.inputText ? queryForm.inputText.split('\n').filter((line: string) => line.trim()) : []
+    
+    // 合并内容，去重
+    const allLines = [...existingLines, ...newLines]
+    const uniqueLines = Array.from(new Set(allLines))
+    
+    // 更新输入文本
+    queryForm.inputText = uniqueLines.join('\n')
+    
+    // 显示追加结果
+    const addedCount = newLines.length
+    const duplicateCount = newLines.length - (uniqueLines.length - existingLines.length)
+    
+    if (duplicateCount > 0) {
+      Message.info(t('searchTable.query.appendResult', { 
+        added: addedCount, 
+        duplicate: duplicateCount,
+        total: uniqueLines.length 
+      }))
+    } else {
+      Message.success(t('searchTable.query.appendSuccess', { 
+        added: addedCount,
+        total: uniqueLines.length 
+      }))
+    }
+    
     onSuccess({ content: queryForm.inputText })
   }
 
@@ -357,7 +454,7 @@ const handleClick = (record: any) => {
 }
 const handleOk = () => {
   visible.value = false
-  const lines = queryForm.inputText.replaceAll('\r', '').split('\n').filter(line => line.trim())
+  const lines = queryForm.inputText.replace(/\r/g, '').split('\n').filter((line: string) => line.trim())
 
   if (lines.length === 0) {
     return
@@ -388,6 +485,24 @@ const handleCancel = () => {
   queryForm.inputText = ''
   activeTab.value = 'savedFiles'
   selectedSavedFile.value = null
+  
+  // 重置文件上传状态
+  if (typeof window !== 'undefined' && (window as any).arcoUploadRefs) {
+    // 清除所有上传组件的状态
+    Object.values((window as any).arcoUploadRefs).forEach((ref: any) => {
+      if (ref && ref.reset) {
+        ref.reset();
+      }
+    });
+  }
+  
+  // 重置上传组件引用
+  if (uploadRef.value) {
+    uploadRef.value.reset();
+  }
+  if (appendUploadRef.value) {
+    appendUploadRef.value.reset();
+  }
 }
 
 // 标签页切换处理
@@ -408,7 +523,7 @@ const loadSavedFiles = () => {
     console.log('查询页面加载数据集:', {
       timestamp: new Date().toLocaleString(),
       count: saved.length,
-      datasets: saved.map(f => ({ id: f.id, name: f.name, totalLines: f.totalLines }))
+      datasets: saved.map((f: any) => ({ id: f.id, name: f.name, totalLines: f.totalLines }))
     })
     savedFilesList.value = saved
   } catch (error) {
@@ -468,6 +583,102 @@ const useSavedFile = () => {
   } catch (error) {
     console.error('❌ 使用已保存数据集时出错:', error)
   }
+}
+
+// 追加到已保存文件
+const appendToSavedFile = (savedFile: SavedFile) => {
+  // 创建文件输入元素
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.txt,.csv'
+  input.style.display = 'none'
+  
+  input.onchange = (event: any) => {
+    const file = event.target.files[0]
+    if (!file) return
+    
+    // 验证文件扩展名
+    const fileName = file.name.toLowerCase()
+    if (!fileName.endsWith('.txt') && !fileName.endsWith('.csv')) {
+      Message.error(t('searchTable.query.fileTypeError'))
+      return
+    }
+    
+    // 读取文件内容
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const content = e.target?.result as string
+      const newLines = content.split('\n').filter((line: string) => line.trim())
+      
+      // 获取现有内容
+      const existingLines = savedFile.data
+      
+      // 合并内容，去重
+      const allLines = [...existingLines, ...newLines]
+      const uniqueLines = Array.from(new Set(allLines))
+      
+      // 更新已保存文件
+      const updatedFile = {
+        ...savedFile,
+        data: uniqueLines,
+        totalLines: uniqueLines.length,
+        updatedAt: Date.now()
+      }
+      
+      // 更新localStorage中的已保存文件列表
+      try {
+        const savedFiles = JSON.parse(localStorage.getItem('savedFiles') || '[]')
+        const updatedFiles = savedFiles.map((f: SavedFile) => 
+          f.id === savedFile.id ? updatedFile : f
+        )
+        localStorage.setItem('savedFiles', JSON.stringify(updatedFiles))
+        
+        // 更新当前列表
+        savedFilesList.value = updatedFiles
+        
+        // 显示追加结果
+        const addedCount = newLines.length
+        const duplicateCount = newLines.length - (uniqueLines.length - existingLines.length)
+        
+        if (duplicateCount > 0) {
+          Message.success(t('searchTable.savedFiles.appendResult', { 
+            fileName: savedFile.name,
+            added: addedCount, 
+            duplicate: duplicateCount,
+            total: uniqueLines.length 
+          }))
+        } else {
+          Message.success(t('searchTable.savedFiles.appendSuccess', { 
+            fileName: savedFile.name,
+            added: addedCount,
+            total: uniqueLines.length 
+          }))
+        }
+        
+        // 触发自定义事件通知其他页面
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('savedFilesUpdated', {
+            detail: { action: 'append', fileId: savedFile.id }
+          }))
+        }
+        
+      } catch (error) {
+        console.error('❌ 追加文件时出错:', error)
+        Message.error(t('searchTable.savedFiles.appendError'))
+      }
+    }
+    
+    reader.onerror = () => {
+      Message.error(t('searchTable.query.fileReadError'))
+    }
+    
+    reader.readAsText(file, 'utf-8')
+  }
+  
+  // 触发文件选择
+  document.body.appendChild(input)
+  input.click()
+  document.body.removeChild(input)
 }
 
 const goToFileManager = () => {
@@ -638,7 +849,18 @@ export default {
         .saved-file-actions {
           display: flex;
           justify-content: flex-end;
+          gap: 4px;
           margin-top: 8px;
+          
+          .arco-btn {
+            padding: 2px 6px;
+            font-size: 12px;
+            
+            .arco-icon {
+              font-size: 12px;
+              margin-right: 2px;
+            }
+          }
         }
 
         .selected-indicator {
@@ -669,5 +891,29 @@ export default {
   color: #8c8c8c;
   margin-top: 4px;
   line-height: 1.4;
+}
+
+.upload-section {
+  .append-section {
+    margin-top: 16px;
+    
+    .append-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-weight: 500;
+      
+      span {
+        color: #262626;
+      }
+    }
+    
+    .upload-tip {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #8c8c8c;
+    }
+  }
 }
 </style>

@@ -66,6 +66,10 @@ const localeFileManager = {
   'fileManager.saved.edit': 'Edit',
   'fileManager.saved.delete': 'Delete',
   'fileManager.saved.deleteSuccess': 'Delete Successful',
+  'fileManager.saved.append': 'Append',
+  'fileManager.saved.appendSuccess': 'Append successful: Added {added} lines to {fileName}, total {total} lines',
+  'fileManager.saved.appendResult': 'Append completed: Added {added} lines to {fileName}, {duplicate} duplicates, total {total} lines',
+  'fileManager.saved.appendError': 'Append failed',
 
   // Preview related
   'fileManager.preview.title': 'File Preview',

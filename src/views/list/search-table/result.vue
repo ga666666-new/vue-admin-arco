@@ -48,8 +48,16 @@
               {{ isBatchProcessing ? `🔄 ${t('searchTable.batch.processing')}` : `🚀 ${t('searchTable.batch.start')}` }}
             </a-button>
 
-            <a-button v-if="isBatchProcessing" type="outline" status="danger" @click="stopBatchProcessing">
-              ⏹️ {{ t('searchTable.batch.stop') }}
+            <a-button v-if="isBatchProcessing" type="outline" status="warning" @click="pauseBatchProcessing">
+              ⏸️ {{ t('searchTable.batch.pause') }}
+            </a-button>
+
+            <a-button v-if="!isBatchProcessing && hasUnfinishedTasks && !isBatchPaused" type="outline" @click="continueBatchProcessing">
+              🔄 {{ t('searchTable.batch.continue') }}
+            </a-button>
+            
+            <a-button v-if="isBatchPaused" type="outline" @click="resumeBatchProcessing">
+              ▶️ {{ t('searchTable.batch.resume') }}
             </a-button>
           </div>
 
@@ -92,7 +100,7 @@
         </div>
       </div>
       <a-table :columns="columns" :loading="loading" :data="processedData.length > 0 ? processedData : dataList"
-        :size="size" :scroll="{ x: 'max-content' }">
+        :size="size" :scroll="{ x: 'max-content' }" :pagination="false">
         <template #status="{ record }">
           <div style="text-align: center;">
             <a-tag v-if="getBatchStatus(record) === 'pending'" color="gray">
@@ -122,49 +130,43 @@
   </a-watermark>
 </template>
 <script lang="ts" setup>
-import { queryService, submitOrder, ServiceRecord } from "@/api/list";
+import { queryService, submitOrder } from "@/api/list";
 import type { LoginData } from "@/api/user";
 import useLocale from "@/hooks/locale";
 import { useUserStore } from "@/store";
 import { getToken } from "@/utils/auth";
-import { TableColumnData } from "@arco-design/web-vue";
+import { Message, Modal, TableColumnData } from "@arco-design/web-vue";
+import { IconCheckCircle } from '@arco-design/web-vue/es/icon';
 import dayjs from "dayjs";
-import { computed, onMounted, ref, onBeforeUnmount } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
+import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import * as XLSX from "xlsx";
-import { Message, Modal } from '@arco-design/web-vue'
-import { IconCheckCircle } from '@arco-design/web-vue/es/icon'
 
 // 导入数据处理工具
 import {
-  processThirdPartyResponse,
-  generateTableColumns,
-  exportToCSV,
-  type DeviceQueryResult,
-  type TableColumn,
-  // 导入新的通用处理器
-  GenericDataProcessor,
-  createDeviceInfoProcessor,
-  createGenericTextProcessor,
-  type GenericDataProcessorConfig,
-  type GenericParseResult,
-  // 导入简单的键值对提取器
-  extractKeyValuePairs,
-  extractBatchKeyValuePairs,
-  generateSimpleTableColumns
-} from '@/utils/data-processor'
+    exportToCSV,
+    // 导入简单的键值对提取器
+    extractKeyValuePairs,
+    type DeviceQueryResult
+} from '@/utils/data-processor';
 
 const { t } = useI18n();
 
-// 创建通用数据处理器实例
-const deviceProcessor = createDeviceInfoProcessor()
-const genericProcessor = createGenericTextProcessor()
+
 
 const columns = computed<TableColumnData[]>(() => {
   // 如果有动态列，使用动态列配置
   if (dynamicColumns.value.length > 0) {
     return [
+      {
+        title: '#',
+        dataIndex: "index",
+        width: 60,
+        align: 'center' as const,
+        fixed: 'left' as const,
+        render: ({ rowIndex }: { rowIndex: number }) => rowIndex + 1,
+      },
       {
         title: t("searchTable.columns.sn"), // 使用SN/IMEI作为标题
         dataIndex: "sn", // 使用sn字段
@@ -184,6 +186,13 @@ const columns = computed<TableColumnData[]>(() => {
 
   // 默认列配置（向后兼容）
   return [
+    {
+      title: '#',
+      dataIndex: "index",
+      width: 60,
+      align: 'center' as const,
+      render: ({ rowIndex }: { rowIndex: number }) => rowIndex + 1,
+    },
     {
       title: t("searchTable.columns.sn"),
       dataIndex: "sn",
@@ -219,9 +228,9 @@ const id = computed(() => {
   return sn;
 });
 
-const resList = ref([]);
-const dataList = ref([]);
-const tableFileds = ref([]);
+const resList = ref<any[]>([]);
+const dataList = ref<Array<{ sn: string; result: any }>>([]);
+const tableFileds = ref<any[]>([]);
 // 新增：存储处理后的键值对数据
 const processedData = ref<Array<{ id: string;[key: string]: any }>>([]);
 // 新增：动态表格列
@@ -230,24 +239,116 @@ const dynamicColumns = ref<TableColumnData[]>([]);
 const batchConfig = ref({
   threadCount: 3, // 默认3个线程
   batchSize: 10,  // 每批处理数量
+  maxRetries: 3,  // 最大重试次数
+  retryDelay: 2000, // 重试延迟（毫秒）
+  timeout: 60000, // API超时时间（毫秒）- 60秒
 });
+
 // 批量处理状态
-const batchStatus = ref<Record<string, 'pending' | 'loading' | 'completed' | 'error'>>({});
+const batchStatus = ref<Record<string, 'pending' | 'loading' | 'completed' | 'error' | 'retrying'>>({});
 // 正在进行批量处理
 const isBatchProcessing = ref(false);
+// 批量处理是否已暂停
+const isBatchPaused = ref(false);
+// 暂停信号
+const pauseSignal = ref(false);
 // 批量处理进度
 const batchProgress = ref({
   total: 0,
   completed: 0,
-  failed: 0
+  failed: 0,
+  retrying: 0
 });
 
-const list = computed(() => {
-  const sn = route.query.id;
-  return JSON.parse(localStorage.getItem(sn) || "[]");
+// 全局并发池引用
+let globalPool: ConcurrencyPool | null = null;
+
+// 持久化存储键
+const STORAGE_KEYS = {
+  BATCH_STATUS: 'batch_status',
+  BATCH_PROGRESS: 'batch_progress',
+  BATCH_CONFIG: 'batch_config',
+  PROCESSED_DATA: 'processed_data',
+  DYNAMIC_COLUMNS: 'dynamic_columns'
+};
+
+// 保存状态到localStorage
+const saveBatchState = () => {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const state = {
+        batchStatus: batchStatus.value,
+        batchProgress: batchProgress.value,
+        batchConfig: batchConfig.value,
+        processedData: processedData.value,
+        dynamicColumns: dynamicColumns.value,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(STORAGE_KEYS.BATCH_STATUS, JSON.stringify(state));
+    }
+  } catch (error) {
+    console.error('保存批量处理状态失败:', error);
+  }
+};
+
+// 从localStorage恢复状态
+const restoreBatchState = () => {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const savedState = localStorage.getItem(STORAGE_KEYS.BATCH_STATUS);
+      if (savedState) {
+        const state = JSON.parse(savedState);
+        const now = Date.now();
+        const stateAge = now - (state.timestamp || 0);
+        
+        // 如果状态保存时间超过1小时，则清除
+        if (stateAge > 3600000) {
+          localStorage.removeItem(STORAGE_KEYS.BATCH_STATUS);
+          return false;
+        }
+        
+        batchStatus.value = state.batchStatus || {};
+        batchProgress.value = state.batchProgress || { total: 0, completed: 0, failed: 0, retrying: 0 };
+        batchConfig.value = { ...batchConfig.value, ...state.batchConfig };
+        processedData.value = state.processedData || [];
+        dynamicColumns.value = state.dynamicColumns || [];
+        
+        // 检查是否还有未完成的任务
+        const hasUnfinishedTasks = Object.values(batchStatus.value).some(
+          status => status === 'pending' || status === 'loading' || status === 'retrying'
+        );
+        
+        if (hasUnfinishedTasks) {
+          isBatchProcessing.value = true;
+          console.log('🔄 恢复未完成的批量处理任务');
+          return true;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('恢复批量处理状态失败:', error);
+  }
+  return false;
+};
+
+// 清除持久化状态
+const clearBatchState = () => {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEYS.BATCH_STATUS);
+    }
+  } catch (error) {
+    console.error('清除批量处理状态失败:', error);
+  }
+};
+
+const list = computed((): string[] => {
+  const sn = route.query.id as string;
+  return JSON.parse(localStorage.getItem(sn || '') || "[]");
 });
 
-const submitSingleOrder = async (line) => {
+// 带重试机制的API调用
+const submitSingleOrderWithRetry = async (line: string, retryCount = 0): Promise<any> => {
   try {
     let lang = "zh";
     switch (currentLocale.value) {
@@ -260,10 +361,60 @@ const submitSingleOrder = async (line) => {
         break;
     }
 
-    return await submitOrder(line, getToken(), route.query.serviceId, lang);
-  } catch (error) {
+    const serviceId = route.query.serviceId as string;
+    if (!serviceId) {
+      throw new Error('服务ID不能为空');
+    }
+
+    // 创建带超时的Promise
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('请求超时')), batchConfig.value.timeout);
+    });
+
+    const apiPromise = submitOrder(line, getToken() || '', serviceId || '', lang);
+    
+    // 使用Promise.race实现超时控制
+    const result = await Promise.race([apiPromise, timeoutPromise]);
+    
+    // 检查API返回的错误
+    if (result && typeof result === 'object') {
+      if (result.code !== 200) {
+        throw new Error(result.msg || 'API返回错误');
+      }
+      
+      // 检查是否返回拒绝订单
+      if (result.data && typeof result.data === 'string') {
+        if (result.data.includes('Wrong_Imei') || result.data.includes('拒绝') || result.data.includes('rejected')) {
+          throw new Error('订单被拒绝');
+        }
+      }
+    }
+
+    return result;
+  } catch (error: any) {
+    console.error(`API调用失败 (重试 ${retryCount}/${batchConfig.value.maxRetries}):`, error);
+    
+    // 如果是网络错误或超时，且未超过最大重试次数，则重试
+    if (retryCount < batchConfig.value.maxRetries && 
+        (error.message.includes('超时') || error.message.includes('timeout') || error.message.includes('network'))) {
+      
+      console.log(`🔄 ${line} 将在 ${batchConfig.value.retryDelay}ms 后重试...`);
+      
+      // 等待重试延迟
+      await new Promise(resolve => setTimeout(resolve, batchConfig.value.retryDelay));
+      
+      // 递归重试
+      return submitSingleOrderWithRetry(line, retryCount + 1);
+    }
+    
+    // 超过重试次数或非网络错误，返回null
     return null;
   }
+};
+
+// 向后兼容的简单API调用
+const submitSingleOrder = async (line: string) => {
+  return submitSingleOrderWithRetry(line);
 };
 
 const parseDeviceInfo = (input: string) => {
@@ -418,7 +569,8 @@ const initializeBatchData = () => {
   batchProgress.value = {
     total: lines.length,
     completed: 0,
-    failed: 0
+    failed: 0,
+    retrying: 0
   };
 };
 
@@ -426,8 +578,18 @@ const initializeBatchData = () => {
 class ConcurrencyPool {
   private running = 0;
   private queue: Array<() => Promise<void>> = [];
+  private paused = false;
 
   constructor(private maxConcurrency: number) { }
+
+  pause() {
+    this.paused = true;
+  }
+
+  resume() {
+    this.paused = false;
+    this.next();
+  }
 
   async add<T>(task: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
@@ -449,7 +611,7 @@ class ConcurrencyPool {
   }
 
   private next() {
-    if (this.running >= this.maxConcurrency || this.queue.length === 0) {
+    if (this.paused || this.running >= this.maxConcurrency || this.queue.length === 0) {
       return;
     }
 
@@ -469,12 +631,26 @@ const processSingleItem = async (line: string, index: number, pool: ConcurrencyP
         throw new Error('批量处理已取消');
       }
 
+      // 检查是否暂停
+      if (pauseSignal.value) {
+        console.log(`⏸️ 第${index + 1}项等待恢复: ${line}`);
+        // 等待恢复信号
+        while (pauseSignal.value) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          // 再次检查是否被取消
+          if (batchController?.signal.aborted) {
+            throw new Error('批量处理已取消');
+          }
+        }
+      }
+
       // 更新状态为loading
       batchStatus.value[line] = 'loading';
+      saveBatchState(); // 保存状态
       console.log(`🔄 开始处理第${index + 1}项: ${line}`);
 
       // 调用API
-      const response = await submitSingleOrder(line);
+      const response = await submitSingleOrderWithRetry(line);
 
       if (response) {
         // 使用键值对提取器处理响应
@@ -497,6 +673,7 @@ const processSingleItem = async (line: string, index: number, pool: ConcurrencyP
         // 更新状态
         batchStatus.value[line] = 'completed';
         batchProgress.value.completed++;
+        saveBatchState(); // 保存状态
 
         console.log(`✅ 第${index + 1}项处理完成: ${line}`);
 
@@ -513,6 +690,7 @@ const processSingleItem = async (line: string, index: number, pool: ConcurrencyP
       // 更新失败状态
       batchStatus.value[line] = 'error';
       batchProgress.value.failed++;
+      saveBatchState(); // 保存状态
 
       // 更新表格显示错误信息
       const existingIndex = processedData.value.findIndex(item => item.id === line);
@@ -605,13 +783,14 @@ const startBatchProcessing = async () => {
 
     // 初始化数据
     initializeBatchData();
+    saveBatchState(); // 保存初始状态
 
-    // 创建并发池
-    const pool = new ConcurrencyPool(batchConfig.value.threadCount);
+    // 创建并发池并保存全局引用
+    globalPool = new ConcurrencyPool(batchConfig.value.threadCount);
 
     // 开始处理所有项目
     const promises = lines.map((line, index) =>
-      processSingleItem(line, index, pool)
+      processSingleItem(line, index, globalPool!)
     );
 
     // 等待所有处理完成
@@ -626,6 +805,9 @@ const startBatchProcessing = async () => {
       Message.warning(`⚠️ ${t('searchTable.batch.completedWithErrors', { success: batchProgress.value.completed, failed: batchProgress.value.failed })}`);
     }
 
+    // 处理完成后清除持久化状态
+    clearBatchState();
+
   } catch (error: any) {
     console.error('❌ 批量处理失败:', error);
     Message.error(`${t('searchTable.batch.failed')}: ${error?.message || '未知错误'}`);
@@ -635,7 +817,26 @@ const startBatchProcessing = async () => {
   }
 };
 
-// 停止批量处理
+// 暂停批量处理
+const pauseBatchProcessing = () => {
+  console.log('⏸️ 暂停批量处理');
+  
+  // 暂停并发池
+  if (globalPool) {
+    globalPool.pause();
+  }
+  
+  // 设置暂停状态
+  isBatchPaused.value = true;
+  pauseSignal.value = true;
+  
+  // 保存当前状态
+  saveBatchState();
+  
+  Message.info(t('searchTable.batch.paused'));
+};
+
+// 停止批量处理（保留用于导航守卫）
 const stopBatchProcessing = () => {
   if (batchController) {
     batchController.abort();
@@ -644,7 +845,11 @@ const stopBatchProcessing = () => {
   }
 
   isBatchProcessing.value = false;
+  isBatchPaused.value = false;
   batchController = null;
+  
+  // 保存当前状态，以便后续恢复
+  saveBatchState();
 };
 
 // 导航守卫：防止在批量处理时意外离开
@@ -696,10 +901,134 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload);
 });
 
+// 检查是否有未完成的任务
+const hasUnfinishedTasks = computed(() => {
+  const unfinishedCount = Object.values(batchStatus.value).filter(
+    status => status === 'pending' || status === 'loading' || status === 'retrying'
+  ).length;
+  console.log(`🔍 检查未完成任务: ${unfinishedCount} 个未完成任务`);
+  return unfinishedCount > 0;
+});
+
 // 获取记录的批量处理状态
 const getBatchStatus = (record: any) => {
   const id = record.id || record.sn;
   return batchStatus.value[id] || 'completed';
+};
+
+// 恢复批量处理（从暂停状态）
+const resumeBatchProcessing = async () => {
+  console.log('▶️ 恢复批量处理');
+  
+  // 恢复并发池
+  if (globalPool) {
+    globalPool.resume();
+  }
+  
+  // 重置暂停状态
+  isBatchPaused.value = false;
+  pauseSignal.value = false;
+  
+  // 检查是否有正在加载的任务，如果有则重新启动批量处理
+  const loadingTasks = Object.values(batchStatus.value).filter(status => status === 'loading');
+  if (loadingTasks.length > 0) {
+    console.log(`🔄 发现 ${loadingTasks.length} 个正在加载的任务，重新启动批量处理`);
+    isBatchProcessing.value = true;
+    
+    // 重新创建并发池
+    globalPool = new ConcurrencyPool(batchConfig.value.threadCount);
+    
+    // 获取所有未完成的任务
+    const lines = list.value || [];
+    const unfinishedTasks = lines.filter(line => 
+      batchStatus.value[line] === 'pending' || batchStatus.value[line] === 'loading' || batchStatus.value[line] === 'error'
+    );
+    
+    // 重新开始处理未完成的项目
+    const promises = unfinishedTasks.map((line, index) =>
+      processSingleItem(line, lines.indexOf(line), globalPool!)
+    );
+    
+    // 等待所有处理完成
+    await Promise.allSettled(promises);
+    
+    console.log(`🎉 恢复处理完成！成功: ${batchProgress.value.completed}, 失败: ${batchProgress.value.failed}`);
+    
+    // 显示完成消息
+    if (batchProgress.value.failed === 0) {
+      Message.success(`🎉 ${t('searchTable.batch.completed', { count: batchProgress.value.completed })}`);
+    } else {
+      Message.warning(`⚠️ ${t('searchTable.batch.completedWithErrors', { success: batchProgress.value.completed, failed: batchProgress.value.failed })}`);
+    }
+    
+    // 处理完成后清除持久化状态
+    clearBatchState();
+    
+  } else {
+    // 没有正在加载的任务，只恢复暂停状态
+    Message.info(t('searchTable.batch.resumed'));
+  }
+  
+  // 确保处理完成后重置状态
+  isBatchProcessing.value = false;
+  batchController = null;
+};
+
+// 继续批量处理
+const continueBatchProcessing = async () => {
+  try {
+    const lines = list.value || [];
+    if (lines.length === 0) {
+      Message.warning(t('searchTable.batch.noData'));
+      return;
+    }
+
+    // 获取未完成的任务
+    const unfinishedTasks = lines.filter(line => 
+      batchStatus.value[line] === 'pending' || batchStatus.value[line] === 'error'
+    );
+
+    if (unfinishedTasks.length === 0) {
+      Message.info(t('searchTable.batch.noUnfinishedTasks'));
+      return;
+    }
+
+    console.log(`🔄 继续处理 ${unfinishedTasks.length} 个未完成任务`);
+
+    // 创建新的取消控制器
+    batchController = new AbortController();
+    isBatchProcessing.value = true;
+
+    // 创建并发池
+    const pool = new ConcurrencyPool(batchConfig.value.threadCount);
+
+    // 开始处理未完成的项目
+    const promises = unfinishedTasks.map((line, index) =>
+      processSingleItem(line, lines.indexOf(line), pool)
+    );
+
+    // 等待所有处理完成
+    await Promise.allSettled(promises);
+
+    console.log(`🎉 继续处理完成！成功: ${batchProgress.value.completed}, 失败: ${batchProgress.value.failed}`);
+
+    // 显示完成消息
+    if (batchProgress.value.failed === 0) {
+      Message.success(`🎉 ${t('searchTable.batch.completed', { count: batchProgress.value.completed })}`);
+    } else {
+      Message.warning(`⚠️ ${t('searchTable.batch.completedWithErrors', { success: batchProgress.value.completed, failed: batchProgress.value.failed })}`);
+    }
+
+    // 处理完成后清除持久化状态
+    clearBatchState();
+
+  } catch (error: any) {
+    console.error('❌ 继续批量处理失败:', error);
+    Message.error(`${t('searchTable.batch.failed')}: ${error?.message || '未知错误'}`);
+  } finally {
+    isBatchProcessing.value = false;
+    batchController = null;
+  }
 };
 
 const formatFiled = (table: string) => {
@@ -879,225 +1208,9 @@ const processApiResponseGeneric = (responseText: string) => {
   }
 }
 
-// 处理任意格式的数据
-const processGenericData = (responseText: string, customConfig?: Partial<GenericDataProcessorConfig>) => {
-  try {
-    // 如果提供了自定义配置，创建新的处理器实例
-    const processor = customConfig ? createGenericTextProcessor(customConfig) : genericProcessor
 
-    const parsedData = processor.processResponse(responseText)
-    console.log('通用数据处理结果:', parsedData)
-    return parsedData
-  } catch (error: any) {
-    console.error('通用数据处理失败:', error)
-    Message.error(`数据处理失败: ${error?.message || '未知错误'}`)
-    throw error
-  }
-}
 
-// 添加处理第三方响应的示例方法（向后兼容）
-const processApiResponse = (responseText: string) => {
-  try {
-    // 使用数据处理工具处理响应
-    const deviceData = processThirdPartyResponse(responseText)
-    console.log('处理后的设备数据:', deviceData)
-    return deviceData
-  } catch (error: any) {
-    console.error('处理API响应失败:', error)
-    Message.error(`数据处理失败: ${error?.message || '未知错误'}`)
-    throw error
-  }
-}
 
-// 生成表格列配置
-const getTableColumns = (): TableColumnData[] => {
-  const columns = generateTableColumns()
-
-  // 转换为ArcoDesign表格列格式
-  return columns.map((col: TableColumn) => ({
-    title: col.title,
-    dataIndex: col.dataIndex,
-    key: col.key,
-    width: col.width,
-    align: col.align || 'left',
-    render: col.render ? ({ record }: { record: any }) => {
-      return col.render!(record[col.dataIndex], record)
-    } : undefined
-  })) as TableColumnData[]
-}
-
-// 动态生成表格列
-const generateDynamicTableColumns = (data: GenericParseResult[]) => {
-  try {
-    // 使用通用处理器生成动态列
-    const dynamicColumns = deviceProcessor.generateDynamicColumns(data)
-
-    // 转换为ArcoDesign表格列格式
-    return dynamicColumns.map((col: TableColumn) => ({
-      title: col.title,
-      dataIndex: col.dataIndex,
-      key: col.key,
-      width: col.width,
-      align: col.align || 'left',
-      render: col.render ? ({ record }: { record: any }) => {
-        return col.render!(record[col.dataIndex], record)
-      } : undefined
-    })) as TableColumnData[]
-  } catch (error: any) {
-    console.error('生成动态表格列失败:', error)
-    return []
-  }
-}
-
-// 批量处理数据
-const processBatchData = (responses: string[]) => {
-  try {
-    console.log('🔄 开始批量处理数据...')
-    const results = deviceProcessor.processBatchResponses(responses)
-    console.log('✅ 批量处理完成:', results)
-
-    // 生成动态表格列
-    if (results.length > 0) {
-      const dynamicColumns = generateDynamicTableColumns(results)
-      console.log('📊 动态表格列:', dynamicColumns)
-    }
-
-    return results
-  } catch (error: any) {
-    console.error('批量处理失败:', error)
-    Message.error(`批量处理失败: ${error?.message || '未知错误'}`)
-    return []
-  }
-}
-
-// 示例：处理示例数据
-const processSampleData = () => {
-  const sampleResponse = `<br />
-<b>Notice</b>:  Undefined index: lang in <b>/www/wwwroot/imei.top/software/instant.php</b> on line <b>11</b><br />
-{"code":200,"msg":"查询成功","data":"型号描述: IPHONE 16 PRO MAX WHITE 256GB-CHN<br>IMEI: 357507795010217<br>IMEI2: 357507795095523<br>MEID: 35750779501021<br>序列号: JVWQFJXN4K<br>预计 购买日期: 2025-05-15<br>保修状态: <font color=\\"green\\">在保</font><br>iCloud Lock: <font color=\\"red\\">ON</font><br>iCloud Status: <font color=\\"green\\">Clean</font><br>Demo Unit: <font color=\\"green\\">No</font><br>贷款设备 Device: <font color=\\"green\\">No</font><br>更换设备 Device: <font color=\\"green\\">No</font><br>Replacement Device: <font color=\\"green\\">No</font><br>Refurbished Device: <font color=\\"green\\">No</font><br>Purchase Country: China<br>运营商: 10 - Unlock.<br>Sim-Lock Status: <font color=\\"green\\">Unlocked</font><br>","debug":"","exec_time":6.273647,"user_ip":"223.254.128.13"}`
-
-  try {
-    // 使用传统方式处理
-    const processedData = processApiResponse(sampleResponse)
-    console.log('示例数据处理结果:', processedData)
-
-    // 使用通用处理器处理
-    const genericProcessedData = processApiResponseGeneric(sampleResponse)
-    console.log('通用处理器处理结果:', genericProcessedData)
-
-    return processedData
-  } catch (error) {
-    console.error('示例数据处理失败:', error)
-    return null
-  }
-}
-
-// 演示不同数据格式的处理
-const demonstrateGenericProcessing = () => {
-  // 演示数据1: 标准JSON格式
-  const jsonData = `{"name": "iPhone 16", "price": 999, "available": true}`
-
-  // 演示数据2: 简单键值对格式
-  const kvData = `
-    设备名称: iPhone 16 Pro Max
-    价格: 9999
-    库存: 有货
-    颜色: 白色
-    容量: 256GB
-  `
-
-  // 演示数据3: HTML格式
-  const htmlData = `
-    设备名称: <b>iPhone 16 Pro Max</b><br>
-    价格: <span style="color:red">9999</span><br>
-    库存: <font color="green">有货</font><br>
-    颜色: 白色<br>
-    容量: 256GB
-  `
-
-  console.log('🎯 开始演示通用数据处理...')
-
-  try {
-    // 处理JSON数据
-    const jsonResult = processGenericData(jsonData)
-    console.log('JSON数据处理结果:', jsonResult)
-
-    // 处理键值对数据
-    const kvResult = processGenericData(kvData)
-    console.log('键值对数据处理结果:', kvResult)
-
-    // 处理HTML数据
-    const htmlResult = processGenericData(htmlData)
-    console.log('HTML数据处理结果:', htmlResult)
-
-    // 使用自定义配置处理数据
-    const customConfig: Partial<GenericDataProcessorConfig> = {
-      fieldMapping: {
-        '设备名称': 'deviceName',
-        '价格': 'price',
-        '库存': 'stock',
-        '颜色': 'color',
-        '容量': 'capacity'
-      },
-      fieldTypes: {
-        deviceName: 'string',
-        price: 'number',
-        stock: 'string',
-        color: 'string',
-        capacity: 'string'
-      }
-    }
-
-    const customResult = processGenericData(htmlData, customConfig)
-    console.log('自定义配置处理结果:', customResult)
-
-  } catch (error) {
-    console.error('演示处理失败:', error)
-  }
-}
-
-// 演示简单键值对提取器
-const demonstrateSimpleExtractor = () => {
-  console.log('🚀 开始演示简单键值对提取器...')
-
-  // 测试数据1: 用户提供的真实数据
-  const realData1 = `<br />
-<b>Notice</b>:  Undefined index: lang in <b>/www/wwwroot/imei.top/software/instant.php</b> on line <b>11</b><br />
-{"code":200,"msg":"查询成功","data":"Wrong_Imei","debug":"","exec_time":0.336041,"user_ip":"223.254.128.13"}`
-
-  // 测试数据2: 用户提供的真实数据
-  const realData2 = `<br />
-<b>Notice</b>:  Undefined index: lang in <b>/www/wwwroot/imei.top/software/instant.php</b> on line <b>11</b><br />
-{"code":200,"msg":"查询成功","data":"序列号: JVWQFJXN4K<br>设备型号: iPhone 16 Pro Max<br>激活状态: 已激活<br>空中激活: 否<br>保修状态: 有限保修<br>剩余保修: 324天<br>购买日期: 2025-05<br>激活日期: 2025-05-15<br>保修到期: 2026-05-14<br>注销设备: 否<br>AC+保障: 否<br>是否资源机: 否<br>AC+购买资格: 可直营店购买<br>购买日期验证: 已验证<br>设备图片: https://cdsassets.apple.com/content/services/pub/image?productid=301048&size=240x240","debug":"","exec_time":4.59001,"user_ip":"223.254.128.13"}`
-
-  try {
-    console.log('\n📋 测试数据1 (Wrong_Imei):')
-    const result1 = extractKeyValuePairs(realData1)
-    console.log('提取结果1:', result1)
-
-    console.log('\n📋 测试数据2 (设备信息):')
-    const result2 = extractKeyValuePairs(realData2)
-    console.log('提取结果2:', result2)
-
-    // 批量处理测试
-    console.log('\n📋 批量处理测试:')
-    const batchResults = extractBatchKeyValuePairs([realData1, realData2])
-    console.log('批量处理结果:', batchResults)
-
-    // 生成表格列
-    if (batchResults.length > 0) {
-      console.log('\n📊 生成简单表格列:')
-      const simpleColumns = generateSimpleTableColumns(batchResults)
-      console.log('表格列配置:', simpleColumns)
-    }
-
-    return { result1, result2, batchResults }
-
-  } catch (error) {
-    console.error('简单提取器演示失败:', error)
-    return null
-  }
-}
 
 // 导出数据到CSV
 const handleExportCSV = (data: DeviceQueryResult[]) => {
@@ -1117,19 +1230,24 @@ onMounted(async () => {
 
   await initTable();
 
-  // 不自动执行fetchData，改为手动批量处理
-  // fetchData();
-
-  // 初始化批量处理的数据状态
+  // 立即初始化并显示数据
   if (list.value && list.value.length > 0) {
+    console.log(`📊 立即显示 ${list.value.length} 条数据`);
     initializeBatchData();
+    
+    // 显示数据加载完成的消息
+    Message.success(`📋 已加载 ${list.value.length} 条数据，可以开始批量处理`);
   }
 
-  // 开发环境下的演示功能（可选）
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🚀 开发模式：可在控制台使用 extractKeyValuePairs(data) 测试数据处理');
-    console.log('🛡️ 页面导航保护已启用，批量处理时将阻止意外离开');
+  // 尝试恢复批量处理状态
+  const hasRestoredState = restoreBatchState();
+  
+  if (hasRestoredState) {
+    console.log('🔄 已恢复批量处理状态，可以继续处理');
+    Message.info(t('searchTable.batch.stateRestored'));
   }
+
+
 });
 </script>
 

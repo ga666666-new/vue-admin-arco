@@ -334,22 +334,3 @@ export function runAllTests() {
   }
 }
 
-// 在开发环境中暴露测试方法到全局
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  (window as any).testDeviceInfoProcessor = testDeviceInfoProcessor;
-  (window as any).testProductInfoProcessor = testProductInfoProcessor;
-  (window as any).testUserInfoProcessor = testUserInfoProcessor;
-  (window as any).testJsonProcessor = testJsonProcessor;
-  (window as any).testMixedDataProcessor = testMixedDataProcessor;
-  (window as any).testBatchProcessing = testBatchProcessing;
-  (window as any).runAllTests = runAllTests;
-
-  console.log('🧪 通用数据处理器测试方法已加载到全局对象:')
-  console.log('  - testDeviceInfoProcessor() - 测试设备信息处理')
-  console.log('  - testProductInfoProcessor() - 测试商品信息处理')
-  console.log('  - testUserInfoProcessor() - 测试用户信息处理')
-  console.log('  - testJsonProcessor() - 测试JSON数据处理')
-  console.log('  - testMixedDataProcessor() - 测试混合格式处理')
-  console.log('  - testBatchProcessing() - 测试批量处理')
-  console.log('  - runAllTests() - 运行所有测试')
-} 

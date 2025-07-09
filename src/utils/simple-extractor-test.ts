@@ -224,16 +224,3 @@ export function runAllSimpleTests() {
   }
 }
 
-// 在开发环境中暴露测试方法到全局
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  (window as any).testUserRealData = testUserRealData;
-  (window as any).demonstrateDataFormats = demonstrateDataFormats;
-  (window as any).performanceTest = performanceTest;
-  (window as any).runAllSimpleTests = runAllSimpleTests;
-
-  console.log('🧪 简单键值对提取器测试方法已加载:')
-  console.log('  - testUserRealData() - 测试用户真实数据')
-  console.log('  - demonstrateDataFormats() - 演示各种数据格式')
-  console.log('  - performanceTest() - 性能测试')
-  console.log('  - runAllSimpleTests() - 运行所有测试')
-} 
