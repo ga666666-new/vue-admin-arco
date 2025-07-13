@@ -62,22 +62,34 @@ const carouselItem = computed(() => [
   }
 
   &-title {
-    color: var(--color-fill-1);
-    font-weight: 500;
-    font-size: 20px;
-    line-height: 28px;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 32px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    text-align: center;
   }
 
   &-sub-title {
-    margin-top: 8px;
-    color: var(--color-text-3);
-    font-size: 14px;
-    line-height: 22px;
+    margin-top: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    line-height: 24px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    text-align: center;
   }
 
   &-image {
     width: 320px;
     margin-top: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    }
   }
 }
 </style>

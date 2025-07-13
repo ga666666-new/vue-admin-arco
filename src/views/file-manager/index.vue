@@ -123,6 +123,10 @@
             <icon-refresh />
             {{ $t('fileManager.saved.refresh') }}
           </a-button>
+          <a-button size="mini" type="outline" @click="forceReloadData">
+            <icon-sync />
+            强制重载
+          </a-button>
         </div>
       </template>
       <div class="saved-files-section">
@@ -516,6 +520,15 @@ const saveFiles = async () => {
     savedFiles.value.push(savedFile)
     console.log('🔄 当前页面数据集列表已更新，总数:', savedFiles.value.length)
 
+    // 强制触发响应式更新
+    await nextTick()
+
+    // 验证数据是否正确显示
+    setTimeout(() => {
+      console.log('🔍 保存后验证 - 页面显示数据集数量:', savedFiles.value.length)
+      console.log('🔍 保存后验证 - localStorage数据集数量:', JSON.parse(localStorage.getItem('savedFiles') || '[]').length)
+    }, 100)
+
     // 清空当前上传
     clearCurrentFiles()
 
@@ -617,31 +630,31 @@ const appendToSavedFile = (savedFile: SavedFile) => {
   input.type = 'file'
   input.accept = '.txt,.csv'
   input.style.display = 'none'
-  
+
   input.onchange = (event: any) => {
     const file = event.target.files[0]
     if (!file) return
-    
+
     // 验证文件扩展名
     const fileName = file.name.toLowerCase()
     if (!fileName.endsWith('.txt') && !fileName.endsWith('.csv')) {
       Message.error(t('fileManager.upload.fileTypeError'))
       return
     }
-    
+
     // 读取文件内容
     const reader = new FileReader()
     reader.onload = (e) => {
       const content = e.target?.result as string
       const newLines = content.split('\n').filter((line: string) => line.trim())
-      
+
       // 获取现有内容
       const existingLines = savedFile.data
-      
+
       // 合并内容，去重
       const allLines = [...existingLines, ...newLines]
       const uniqueLines = Array.from(new Set(allLines))
-      
+
       // 更新已保存文件
       const updatedFile = {
         ...savedFile,
@@ -649,64 +662,64 @@ const appendToSavedFile = (savedFile: SavedFile) => {
         totalLines: uniqueLines.length,
         updatedAt: Date.now()
       }
-      
+
       // 更新localStorage中的已保存文件列表
       try {
         const savedFilesData = JSON.parse(localStorage.getItem('savedFiles') || '[]')
-        const updatedFiles = savedFilesData.map((f: SavedFile) => 
+        const updatedFiles = savedFilesData.map((f: SavedFile) =>
           f.id === savedFile.id ? updatedFile : f
         )
         localStorage.setItem('savedFiles', JSON.stringify(updatedFiles))
-        
+
         // 更新当前列表
         savedFiles.value = updatedFiles
-        
+
         // 显示追加结果
         const addedCount = newLines.length
         const duplicateCount = newLines.length - (uniqueLines.length - existingLines.length)
-        
+
         if (duplicateCount > 0) {
-          Message.success(t('fileManager.saved.appendResult', { 
-            fileName: savedFile.name,
-            added: addedCount, 
-            duplicate: duplicateCount,
-            total: uniqueLines.length 
-          }))
-        } else {
-          Message.success(t('fileManager.saved.appendSuccess', { 
+          Message.success(t('fileManager.saved.appendResult', {
             fileName: savedFile.name,
             added: addedCount,
-            total: uniqueLines.length 
+            duplicate: duplicateCount,
+            total: uniqueLines.length
+          }))
+        } else {
+          Message.success(t('fileManager.saved.appendSuccess', {
+            fileName: savedFile.name,
+            added: addedCount,
+            total: uniqueLines.length
           }))
         }
-        
+
         // 触发自定义事件通知其他页面
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('savedFilesUpdated', {
             detail: { action: 'append', fileId: savedFile.id }
           }))
         }
-        
+
         console.log('✅ 追加完成:', {
           fileName: savedFile.name,
           added: addedCount,
           duplicate: duplicateCount,
           total: uniqueLines.length
         })
-        
+
       } catch (error) {
         console.error('❌ 追加文件时出错:', error)
         Message.error(t('fileManager.saved.appendError'))
       }
     }
-    
+
     reader.onerror = () => {
       Message.error(t('fileManager.upload.fileReadError'))
     }
-    
+
     reader.readAsText(file, 'utf-8')
   }
-  
+
   // 触发文件选择
   document.body.appendChild(input)
   input.click()
@@ -726,7 +739,7 @@ const loadSavedFiles = () => {
     console.log('📁 文件管理页面加载数据集:', {
       timestamp: new Date().toLocaleString(),
       count: saved.length,
-      datasets: saved.map(f => ({ id: f.id, name: f.name, totalLines: f.totalLines }))
+      datasets: saved.map((f: SavedFile) => ({ id: f.id, name: f.name, totalLines: f.totalLines }))
     })
     savedFiles.value = saved
     console.log('✅ 文件管理页面数据集更新完成，当前显示:', savedFiles.value.length, '个数据集')
@@ -736,10 +749,47 @@ const loadSavedFiles = () => {
   }
 }
 
+// 强制重载数据（调试用）
+const forceReloadData = () => {
+  console.log('🔄 强制重载数据...')
+
+  // 清空当前数据
+  savedFiles.value = []
+
+  // 检查localStorage状态
+  const healthCheck = checkLocalStorageHealth()
+  console.log('🏥 重载前健康检查:', healthCheck)
+
+  // 重新加载
+  loadSavedFiles()
+
+  // 验证结果
+  setTimeout(() => {
+    console.log('🔍 强制重载后验证:')
+    console.log('  - 页面显示数据集数量:', savedFiles.value.length)
+
+    const rawData = localStorage.getItem('savedFiles')
+    if (rawData) {
+      const parsedData = JSON.parse(rawData)
+      console.log('  - localStorage数据集数量:', parsedData.length)
+
+      if (parsedData.length > 0 && savedFiles.value.length === 0) {
+        console.error('❌ 数据加载失败！localStorage有数据但页面没有显示')
+        console.log('🔧 尝试直接赋值...')
+        savedFiles.value = parsedData
+      } else if (parsedData.length === savedFiles.value.length) {
+        console.log('✅ 数据加载成功')
+      }
+    }
+  }, 100)
+
+  Message.info('数据重载完成')
+}
+
 // 调试功能：在控制台提供数据查看方法
 const debugSavedFiles = () => {
   const saved = JSON.parse(localStorage.getItem('savedFiles') || '[]')
-  console.table(saved.map(f => ({
+  console.table(saved.map((f: SavedFile) => ({
     ID: f.id,
     名称: f.name,
     行数: f.totalLines,
@@ -809,16 +859,16 @@ const checkLocalStorageHealth = () => {
     return { healthy: true, dataExists: true, count: parsedData.length }
   } catch (error) {
     console.error('❌ localStorage健康检查失败:', error)
-    return { healthy: false, error: error?.message || 'Unknown error' }
+    return { healthy: false, error: (error as Error)?.message || 'Unknown error' }
   }
 }
 
 // 将调试方法暴露到window对象（仅开发环境）
 if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   try {
-    (window as any).debugSavedFiles = debugSavedFiles
-      (window as any).clearAllSavedFiles = clearAllSavedFiles
-        (window as any).checkLocalStorageHealth = checkLocalStorageHealth
+    (window as any).debugSavedFiles = debugSavedFiles;
+    (window as any).clearAllSavedFiles = clearAllSavedFiles;
+    (window as any).checkLocalStorageHealth = checkLocalStorageHealth;
     console.log('🔧 调试提示：')
     console.log('  - debugSavedFiles() 查看所有数据集')
     console.log('  - clearAllSavedFiles() 清空所有数据集')
@@ -831,7 +881,31 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
 // 页面加载时执行
 onMounted(() => {
   console.log('🚀 文件管理页面正在挂载...')
+
+  // 先检查localStorage健康状况
+  const healthCheck = checkLocalStorageHealth()
+  console.log('🏥 localStorage健康检查:', healthCheck)
+
+  // 加载数据
   loadSavedFiles()
+
+  // 立即验证加载结果
+  setTimeout(() => {
+    console.log('📊 加载后立即验证:')
+    console.log('  - 页面显示数据集数量:', savedFiles.value.length)
+    console.log('  - localStorage原始数据:', localStorage.getItem('savedFiles')?.length || 0, '字符')
+
+    const rawData = localStorage.getItem('savedFiles')
+    if (rawData) {
+      try {
+        const parsedData = JSON.parse(rawData)
+        console.log('  - localStorage解析后数量:', parsedData.length)
+        console.log('  - 数据项示例:', parsedData.slice(0, 2))
+      } catch (e) {
+        console.error('  - localStorage数据解析失败:', e)
+      }
+    }
+  }, 100)
 
   // 开发环境下输出当前数据
   if (process.env.NODE_ENV === 'development') {

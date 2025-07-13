@@ -1,0 +1,48 @@
+index.ts:99 👤 登录成功，用户信息: {id: '21', group: '0', name: 'test_hua', password: '$2y$10$McvLHz0D/uCnxHwqb2CKnOy4uEBtDGb9Mrp4TMGdsVZGYBz.43mcK', email: '1575291979@qq.com', …}
+index.ts:100 👤 用户角色: undefined
+index.ts:62 🔄 开始预加载services数据...
+cache.ts:145 🔄 缓存未命中，执行API请求: 7D53-IEHZ-PIV7-MFCG
+cache.ts:92 💾 缓存已保存: api_cache_7D53-IEHZ-PIV7-MFCG
+index.ts:67 ✅ Services数据预加载完成
+permission.ts:12 🔐 权限检查 - 路由: Index, requiresAuth: true, roles: ['admin'] userRole: "admin"
+permission.ts:21 🔐 权限检查结果 - 路由: Index, 有权限: true
+use-menu-tree.ts:40 📋 当前菜单路由: (5) [{…}, {…}, {…}, {…}, {…}]
+use-menu-tree.ts:56 🔄 开始处理菜单树，路由数量: 5
+use-menu-tree.ts:62 🔍 处理路由: FileImport, 层级: 0, meta: {locale: 'menu.fileManager.upload', requiresAuth: true, roles: Array(1)}
+permission.ts:12 🔐 权限检查 - 路由: FileImport, requiresAuth: true, roles: ['*'] userRole: "admin"
+permission.ts:21 🔐 权限检查结果 - 路由: FileImport, 有权限: true
+use-menu-tree.ts:104 📊 层级 1 处理完成，结果数量: 0
+use-menu-tree.ts:100 ❌ 路由 FileImport 被过滤掉
+use-menu-tree.ts:62 🔍 处理路由: Index, 层级: 0, meta: {locale: 'menu.result.success', requiresAuth: true, roles: Array(1), hideInMenu: true}
+permission.ts:12 🔐 权限检查 - 路由: Index, requiresAuth: true, roles: ['admin'] userRole: "admin"
+permission.ts:21 🔐 权限检查结果 - 路由: Index, 有权限: true
+use-menu-tree.ts:104 📊 层级 1 处理完成，结果数量: 0
+use-menu-tree.ts:100 ❌ 路由 Index 被过滤掉
+use-menu-tree.ts:62 🔍 处理路由: file-manager, 层级: 0, meta: {locale: 'menu.fileManager', requiresAuth: true, icon: 'icon-folder', order: 1}
+permission.ts:12 🔐 权限检查 - 路由: file-manager, requiresAuth: true, roles: undefined userRole: "admin"
+permission.ts:21 🔐 权限检查结果 - 路由: file-manager, 有权限: true
+use-menu-tree.ts:62 🔍 处理路由: FileImport, 层级: 1, meta: {locale: 'menu.fileManager.upload', requiresAuth: true, roles: Array(1)}
+permission.ts:12 🔐 权限检查 - 路由: FileImport, requiresAuth: true, roles: ['*'] userRole: "admin"
+permission.ts:21 🔐 权限检查结果 - 路由: FileImport, 有权限: true
+use-menu-tree.ts:73 ✅ 路由 FileImport 为叶子节点
+use-menu-tree.ts:104 📊 层级 1 处理完成，结果数量: 1
+use-menu-tree.ts:85 ✅ 路由 file-manager 有子节点，数量: 1
+use-menu-tree.ts:62 🔍 处理路由: list, 层级: 0, meta: {locale: 'menu.list', requiresAuth: true, roles: Array(1), icon: 'icon-list', order: 2}
+permission.ts:12 🔐 权限检查 - 路由: list, requiresAuth: true, roles: ['*'] userRole: "admin"
+permission.ts:21 🔐 权限检查结果 - 路由: list, 有权限: true
+use-menu-tree.ts:104 📊 层级 1 处理完成，结果数量: 0
+use-menu-tree.ts:100 ❌ 路由 list 被过滤掉
+use-menu-tree.ts:62 🔍 处理路由: result, 层级: 0, meta: {locale: 'menu.result', icon: 'icon-check-circle', requiresAuth: true, order: 5}
+permission.ts:12 🔐 权限检查 - 路由: result, requiresAuth: true, roles: undefined userRole: "admin"
+permission.ts:21 🔐 权限检查结果 - 路由: result, 有权限: true
+use-menu-tree.ts:104 📊 层级 1 处理完成，结果数量: 0
+use-menu-tree.ts:100 ❌ 路由 result 被过滤掉
+use-menu-tree.ts:104 📊 层级 0 处理完成，结果数量: 1
+use-menu-tree.ts:109 🎯 最终菜单树结果: [{…}]
+index.vue:89 🎨 开始渲染菜单，menuTree: [{…}]
+index.vue:94 🎨 渲染菜单项: file-manager /file-manager {locale: 'menu.fileManager', requiresAuth: true, icon: 'icon-folder', order: 1}
+index.vue:120 🎨 菜单渲染完成，节点数量: 1
+index.vue:94 🎨 渲染菜单项: FileImport import {locale: 'menu.fileManager.upload', requiresAuth: true, roles: Array(1)}
+index.vue:94 🎨 渲染菜单项: FileImport import {locale: 'menu.fileManager.upload', requiresAuth: true, roles: Array(1)}
+index.vue:94 🎨 渲染菜单项: FileImport import {locale: 'menu.fileManager.upload', requiresAuth: true, roles: Array(1)}
+index.vue:94 🎨 渲染菜单项: FileImport import {locale: 'menu.fileManager.upload', requiresAuth: true, roles: Array(1)}

@@ -3,7 +3,7 @@
     :font="{ color: 'rgba(255, 0, 0, 0.3)', fontSize: 16 }">
     <Breadcrumb :items="['menu.list', `menu.list.${route.meta.id}`]" />
     <a-card class="general-card" :title="$t(`menu.list.${route.meta.id}`)">
-      
+
       <a-table row-key="id" :loading="loading" :pagination="pagination" :columns="columns as TableColumnData[]"
         :data="renderData" :bordered="false" :size="size" @page-change="onPageChange">
         <template #state="{ record }">
@@ -103,27 +103,20 @@
             <a-form :model="queryForm">
               <a-form-item :label="t('searchTable.query.uploadFile')">
                 <div class="upload-section">
-                  <a-upload 
-                    :limit="1" 
-                    :custom-request="handleCustomRequest" 
-                    accept=".txt,.csv" 
-                    :show-file-list="true"
+                  <a-upload :limit="1" :custom-request="handleCustomRequest" accept=".txt,.csv" :show-file-list="true"
                     ref="uploadRef">
                     <a-button type="outline">{{ $t('searchTable.query.selectFile') }}</a-button>
                   </a-upload>
-                  
+
                   <!-- 追加文件按钮 -->
                   <div v-if="queryForm.inputText" class="append-section">
                     <a-divider />
                     <div class="append-header">
                       <span>{{ $t('searchTable.query.appendFile') }}</span>
-                      <a-tag color="blue">{{ queryForm.inputText.split('\n').filter(line => line.trim()).length }} {{ $t('searchTable.query.currentLines') }}</a-tag>
+                      <a-tag color="blue">{{queryForm.inputText.split('\n').filter(line => line.trim()).length}} {{
+                        $t('searchTable.query.currentLines') }}</a-tag>
                     </div>
-                    <a-upload 
-                      :limit="1" 
-                      :custom-request="handleAppendRequest" 
-                      accept=".txt,.csv" 
-                      :show-file-list="true"
+                    <a-upload :limit="1" :custom-request="handleAppendRequest" accept=".txt,.csv" :show-file-list="true"
                       ref="appendUploadRef">
                       <a-button type="outline" size="small">
                         <icon-plus />
@@ -278,34 +271,34 @@ const handleAppendRequest = (option: any) => {
     const content = e.target?.result as string
     // 过滤空行
     const newLines = content.split('\n').filter((line: string) => line.trim())
-    
+
     // 获取现有内容
     const existingLines = queryForm.inputText ? queryForm.inputText.split('\n').filter((line: string) => line.trim()) : []
-    
+
     // 合并内容，去重
     const allLines = [...existingLines, ...newLines]
     const uniqueLines = Array.from(new Set(allLines))
-    
+
     // 更新输入文本
     queryForm.inputText = uniqueLines.join('\n')
-    
+
     // 显示追加结果
     const addedCount = newLines.length
     const duplicateCount = newLines.length - (uniqueLines.length - existingLines.length)
-    
+
     if (duplicateCount > 0) {
-      Message.info(t('searchTable.query.appendResult', { 
-        added: addedCount, 
+      Message.info(t('searchTable.query.appendResult', {
+        added: addedCount,
         duplicate: duplicateCount,
-        total: uniqueLines.length 
+        total: uniqueLines.length
       }))
     } else {
-      Message.success(t('searchTable.query.appendSuccess', { 
+      Message.success(t('searchTable.query.appendSuccess', {
         added: addedCount,
-        total: uniqueLines.length 
+        total: uniqueLines.length
       }))
     }
-    
+
     onSuccess({ content: queryForm.inputText })
   }
 
@@ -485,7 +478,7 @@ const handleCancel = () => {
   queryForm.inputText = ''
   activeTab.value = 'savedFiles'
   selectedSavedFile.value = null
-  
+
   // 重置文件上传状态
   if (typeof window !== 'undefined' && (window as any).arcoUploadRefs) {
     // 清除所有上传组件的状态
@@ -495,7 +488,7 @@ const handleCancel = () => {
       }
     });
   }
-  
+
   // 重置上传组件引用
   if (uploadRef.value) {
     uploadRef.value.reset();
@@ -592,31 +585,31 @@ const appendToSavedFile = (savedFile: SavedFile) => {
   input.type = 'file'
   input.accept = '.txt,.csv'
   input.style.display = 'none'
-  
+
   input.onchange = (event: any) => {
     const file = event.target.files[0]
     if (!file) return
-    
+
     // 验证文件扩展名
     const fileName = file.name.toLowerCase()
     if (!fileName.endsWith('.txt') && !fileName.endsWith('.csv')) {
       Message.error(t('searchTable.query.fileTypeError'))
       return
     }
-    
+
     // 读取文件内容
     const reader = new FileReader()
     reader.onload = (e) => {
       const content = e.target?.result as string
       const newLines = content.split('\n').filter((line: string) => line.trim())
-      
+
       // 获取现有内容
       const existingLines = savedFile.data
-      
+
       // 合并内容，去重
       const allLines = [...existingLines, ...newLines]
       const uniqueLines = Array.from(new Set(allLines))
-      
+
       // 更新已保存文件
       const updatedFile = {
         ...savedFile,
@@ -624,57 +617,57 @@ const appendToSavedFile = (savedFile: SavedFile) => {
         totalLines: uniqueLines.length,
         updatedAt: Date.now()
       }
-      
+
       // 更新localStorage中的已保存文件列表
       try {
         const savedFiles = JSON.parse(localStorage.getItem('savedFiles') || '[]')
-        const updatedFiles = savedFiles.map((f: SavedFile) => 
+        const updatedFiles = savedFiles.map((f: SavedFile) =>
           f.id === savedFile.id ? updatedFile : f
         )
         localStorage.setItem('savedFiles', JSON.stringify(updatedFiles))
-        
+
         // 更新当前列表
         savedFilesList.value = updatedFiles
-        
+
         // 显示追加结果
         const addedCount = newLines.length
         const duplicateCount = newLines.length - (uniqueLines.length - existingLines.length)
-        
+
         if (duplicateCount > 0) {
-          Message.success(t('searchTable.savedFiles.appendResult', { 
-            fileName: savedFile.name,
-            added: addedCount, 
-            duplicate: duplicateCount,
-            total: uniqueLines.length 
-          }))
-        } else {
-          Message.success(t('searchTable.savedFiles.appendSuccess', { 
+          Message.success(t('searchTable.savedFiles.appendResult', {
             fileName: savedFile.name,
             added: addedCount,
-            total: uniqueLines.length 
+            duplicate: duplicateCount,
+            total: uniqueLines.length
+          }))
+        } else {
+          Message.success(t('searchTable.savedFiles.appendSuccess', {
+            fileName: savedFile.name,
+            added: addedCount,
+            total: uniqueLines.length
           }))
         }
-        
+
         // 触发自定义事件通知其他页面
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('savedFilesUpdated', {
             detail: { action: 'append', fileId: savedFile.id }
           }))
         }
-        
+
       } catch (error) {
         console.error('❌ 追加文件时出错:', error)
         Message.error(t('searchTable.savedFiles.appendError'))
       }
     }
-    
+
     reader.onerror = () => {
       Message.error(t('searchTable.query.fileReadError'))
     }
-    
+
     reader.readAsText(file, 'utf-8')
   }
-  
+
   // 触发文件选择
   document.body.appendChild(input)
   input.click()
@@ -851,11 +844,11 @@ export default {
           justify-content: flex-end;
           gap: 4px;
           margin-top: 8px;
-          
+
           .arco-btn {
             padding: 2px 6px;
             font-size: 12px;
-            
+
             .arco-icon {
               font-size: 12px;
               margin-right: 2px;
@@ -896,19 +889,19 @@ export default {
 .upload-section {
   .append-section {
     margin-top: 16px;
-    
+
     .append-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
       font-weight: 500;
-      
+
       span {
         color: #262626;
       }
     }
-    
+
     .upload-tip {
       margin-top: 8px;
       font-size: 11px;

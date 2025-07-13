@@ -1,4 +1,4 @@
-import NProgress from 'nprogress' // progress bar
+import NProgress from 'nprogress'; // progress bar
 import type { Router, RouteRecordNormalized } from 'vue-router'
 
 import usePermission from '@/hooks/permission'

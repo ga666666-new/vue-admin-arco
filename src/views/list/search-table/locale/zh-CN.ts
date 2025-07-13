@@ -137,6 +137,13 @@ export default {
   'searchTable.status.completed': '已完成',
   'searchTable.status.error': '失败',
   'searchTable.status.title': '状态',
+  'searchTable.status.ready': '准备就绪',
+  'searchTable.status.processing': '处理中',
+  'searchTable.status.paused': '已暂停',
+  'searchTable.status.noData': '暂无数据',
+  'searchTable.status.readyDesc': '点击开始按钮开始批量处理',
+  'searchTable.status.processingDesc': '正在处理数据，可以暂停或结束处理',
+  'searchTable.status.pausedDesc': '处理已暂停，可以继续或结束处理',
 
   // 进度统计
   'searchTable.progress.total': '总数',
@@ -156,16 +163,48 @@ export default {
   'searchTable.export.data': '导出数据',
   'searchTable.export.success': '导出成功',
   'searchTable.export.failed': '导出失败',
+  'searchTable.export.noData': '没有数据可导出',
 
   // 统计信息
   'searchTable.statistics.totalRecords': '总记录数',
   'searchTable.statistics.fieldCount': '字段数',
+  'searchTable.statistics.totalItems': '总项目数',
+  'searchTable.statistics.completed': '已完成',
+  'searchTable.statistics.failed': '失败',
+  'searchTable.statistics.pending': '待处理',
 
   // 数据处理状态
   'searchTable.processing.failed': '数据处理失败',
   'searchTable.processing.error': '处理失败',
 
+  // 控制面板
+  'searchTable.control.title': '查询控制',
+  'searchTable.control.start': '开始',
+  'searchTable.control.pause': '暂停',
+  'searchTable.control.resume': '继续',
+  'searchTable.control.stop': '结束',
+  'searchTable.control.exportPartial': '导出已完成',
 
+  // 进度相关
+  'searchTable.progress.title': '处理进度',
+
+  // 表格相关
+  'searchTable.table.title': '查询结果',
+  'searchTable.columns.actions': '操作',
+  'searchTable.actions.retry': '重试',
+  'searchTable.actions.view': '查看',
+  'searchTable.export.all': '导出全部',
+
+  // 错误处理扩展
+  'searchTable.error.title': '处理错误',
+  'searchTable.error.item': '错误项目',
+  'searchTable.error.suggestion': '建议：您可以选择跳过此错误继续处理，或者重试当前项目。',
+  'searchTable.error.skipOnce': '跳过一次',
+  'searchTable.error.retry': '重试',
+  'searchTable.error.skipAll': '跳过所有',
+
+  // 详情查看
+  'searchTable.detail.title': '详细信息',
 
   'searchTable.form.number': '集合编号',
   'searchTable.form.number.placeholder': '请输入集合编号',

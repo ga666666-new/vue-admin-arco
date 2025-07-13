@@ -6,57 +6,93 @@
       <div class="page-container">
         <!-- 头部区域 -->
         <header class="header">
-          <h1 class="title">欢迎体验凌速科技</h1>
-          <p class="subtitle">引领手机信息管理与服务的未来</p>
+          <div class="header-background">
+            <div class="bg-elements">
+              <div class="bg-circle bg-circle-1"></div>
+              <div class="bg-circle bg-circle-2"></div>
+              <div class="bg-triangle"></div>
+            </div>
+          </div>
+          <div class="header-content">
+            <h1 class="title">{{ $t('success.welcome.title') }}</h1>
+            <p class="subtitle">{{ $t('success.welcome.subtitle') }}</p>
+          </div>
         </header>
 
         <!-- 软件介绍区域 -->
-        <section class="software-section">
+        <section class="platform-section">
           <div class="section-content">
-            <h2>探索凌速科技</h2>
-            <p>
-              凌速科技是一款专业的手机IMEI接口服务软件，致力于提供全面的手机信息查询、管理、解锁和保修解决方案。无论您是个人用户还是企业客户，我们的软件都能为您提供高效、灵活和安全的手机管理体验。
-            </p>
-            <div class="features-grid">
-              <div class="feature-card">
-                <a-icon type="search" class="feature-icon" />
-                <h3>专业的手机IMEI接口服务</h3>
-                <p>提供全面的手机信息查询和管理解决方案，快速获取设备详情。</p>
-              </div>
-              <div class="feature-card">
-                <a-icon type="unlock" class="feature-icon" />
-                <h3>一站式保修与解锁服务</h3>
-                <p>支持国际化查询，快速解锁，全面的状态管理，简化您的操作流程。</p>
-              </div>
-              <div class="feature-card">
-                <a-icon type="eye" class="feature-icon" />
-                <h3>接入可视化增强工具</h3>
-                <p>实现灵活的手机信息管理与服务配置，提升用户体验。</p>
+            <div class="section-header">
+              <h2>{{ $t('success.platform.title') }}</h2>
+              <div class="section-divider"></div>
+            </div>
+            <p class="platform-description">{{ $t('success.platform.description') }}</p>
+
+            <div class="features-container">
+              <h3 class="features-title">{{ $t('success.features.title') }}</h3>
+              <div class="features-grid">
+                <div class="feature-card">
+                  <div class="feature-icon-wrapper">
+                    <icon-mobile class="feature-icon" />
+                  </div>
+                  <h4>{{ $t('success.feature1.title') }}</h4>
+                  <p>{{ $t('success.feature1.description') }}</p>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-icon-wrapper">
+                    <icon-bar-chart class="feature-icon" />
+                  </div>
+                  <h4>{{ $t('success.feature2.title') }}</h4>
+                  <p>{{ $t('success.feature2.description') }}</p>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-icon-wrapper">
+                    <icon-safe class="feature-icon" />
+                  </div>
+                  <h4>{{ $t('success.feature3.title') }}</h4>
+                  <p>{{ $t('success.feature3.description') }}</p>
+                </div>
               </div>
             </div>
-            <a-button type="primary" size="large" class="cta-button">立即体验凌速科技</a-button>
+
+            <div class="cta-primary">
+              <a-button type="primary" size="large" class="cta-button">
+                {{ $t('success.cta.button') }}
+              </a-button>
+            </div>
           </div>
         </section>
 
         <!-- 公司介绍区域 -->
         <section class="company-section">
           <div class="section-content">
-            <h2>关于凌速科技</h2>
-            <p>
-              凌速科技成立于2010年，是全球领先的软件开发公司，专注于为企业和个人提供创新的手机管理解决方案。我们拥有遍布10个国家的500多名专家团队，结合尖端技术和以客户为中心的服务理念，为全球用户创造卓越价值。
-            </p>
+            <div class="section-header">
+              <h2>{{ $t('success.company.title') }}</h2>
+              <div class="section-divider"></div>
+            </div>
+            <p class="company-description">{{ $t('success.company.description') }}</p>
+
             <div class="company-highlights">
-              <div class="highlight">
-                <h3>我们的使命</h3>
-                <p>通过直观、高效和可持续的软件解决方案，革新手机信息管理方式。</p>
+              <div class="highlight-card">
+                <div class="highlight-icon">
+                  <icon-tag />
+                </div>
+                <h4>{{ $t('success.mission.title') }}</h4>
+                <p>{{ $t('success.mission.description') }}</p>
               </div>
-              <div class="highlight">
-                <h3>我们的愿景</h3>
-                <p>成为全球企业与用户信赖的合作伙伴，引领数字化管理转型。</p>
+              <div class="highlight-card">
+                <div class="highlight-icon">
+                  <icon-eye />
+                </div>
+                <h4>{{ $t('success.vision.title') }}</h4>
+                <p>{{ $t('success.vision.description') }}</p>
               </div>
-              <div class="highlight">
-                <h3>我们的价值观</h3>
-                <p>创新、诚信和协作是我们一切工作的核心。</p>
+              <div class="highlight-card">
+                <div class="highlight-icon">
+                  <icon-heart />
+                </div>
+                <h4>{{ $t('success.values.title') }}</h4>
+                <p>{{ $t('success.values.description') }}</p>
               </div>
             </div>
           </div>
@@ -64,15 +100,29 @@
 
         <!-- 行动号召区域 -->
         <section class="cta-section">
-          <h2>携手凌速科技，开启未来</h2>
-          <p>准备好革新您的手机管理方式了吗？立即体验凌速科技，感受与众不同！</p>
-          <a-button type="primary" size="large" class="cta-button">立即开始</a-button>
+          <div class="cta-background">
+            <div class="cta-bg-elements">
+              <div class="cta-circle cta-circle-1"></div>
+              <div class="cta-circle cta-circle-2"></div>
+            </div>
+          </div>
+          <div class="cta-content">
+            <h2>{{ $t('success.cta.title') }}</h2>
+            <p>{{ $t('success.cta.description') }}</p>
+            <a-button type="primary" size="large" class="cta-button-secondary">
+              {{ $t('success.cta.start') }}
+            </a-button>
+          </div>
         </section>
 
         <!-- 底部区域 -->
         <footer class="footer">
-          <p>© {{ dayjs().format('YYYY') }} 凌速科技。保留所有权利。</p>
-          <p>联系我们: <a href="mailto:17604515707@163.com">17604515707@163.com</a></p>
+          <div class="footer-content">
+            <p>{{ $t('success.footer.copyright', { year: dayjs().format('YYYY') }) }}</p>
+            <p>{{ $t('success.footer.contact') }}:
+              <a href="mailto:17604515707@163.com">17604515707@163.com</a>
+            </p>
+          </div>
         </footer>
       </div>
     </div>
@@ -80,9 +130,11 @@
 </template>
 
 <script lang="ts" setup>
+import { IconBarChart, IconEye, IconHeart, IconMobile, IconSafe, IconTag } from '@arco-design/web-vue/es/icon';
 import dayjs from 'dayjs';
+import { useI18n } from 'vue-i18n';
 
-
+const { t } = useI18n();
 </script>
 
 <style scoped lang="less">
@@ -90,85 +142,142 @@ import dayjs from 'dayjs';
   padding: 0 20px 20px 20px;
 }
 
-.wrapper {
-  padding: 24px 150px;
-  background-color: var(--color-bg-2);
-  border-radius: 4px;
-}
-
-.result {
-  margin: 150px 0 0 0;
-}
-
-.operation-wrap {
-  margin-bottom: 40px;
-  text-align: center;
-}
-
-.steps-wrapper {
-  width: 100%;
-  min-width: fit-content;
-  margin-bottom: 150px;
-  padding: 20px;
-  background-color: rgb(var(--gray-1));
-}
-</style>
-
-<style lang="less" scoped>
-.mobile {
-  .wrapper {
-    padding: 24px 10px;
-
-    .steps-wrapper {
-      transform: scale(0.8);
-    }
-  }
-}
-
 .page-container {
-  font-family: 'Arial', sans-serif;
-  color: #333;
-  line-height: 1.6;
-  background-color: #f5f5f5;
+  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1a1a1a;
+  line-height: 1.7;
+  background: #ffffff;
+  overflow-x: hidden;
 }
 
 /* Header Styling */
 .header {
+  position: relative;
   text-align: center;
-  padding: 60px 20px;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  padding: 100px 20px 120px;
+  background: linear-gradient(135deg,
+      #667eea 0%,
+      #764ba2 25%,
+      #f093fb 50%,
+      #f5576c 75%,
+      #4facfe 100%);
   color: white;
+  overflow: hidden;
+}
+
+.header-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.bg-elements {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.bg-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(45deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.05));
+  animation: float 8s ease-in-out infinite;
+}
+
+.bg-circle-1 {
+  width: 200px;
+  height: 200px;
+  top: 20%;
+  right: 10%;
+  animation-delay: 0s;
+}
+
+.bg-circle-2 {
+  width: 150px;
+  height: 150px;
+  bottom: 30%;
+  left: 15%;
+  animation-delay: 3s;
+}
+
+.bg-triangle {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 40px solid transparent;
+  border-right: 40px solid transparent;
+  border-bottom: 70px solid rgba(255, 255, 255, 0.08);
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: rotate 10s linear infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: translateX(-50%) rotate(0deg);
+  }
+
+  100% {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+
+.header-content {
+  position: relative;
+  z-index: 1;
 }
 
 .title {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .subtitle {
-  font-size: 1.2rem;
-  opacity: 0.9;
+  font-size: 1.4rem;
+  font-weight: 400;
+  opacity: 0.95;
+  max-width: 600px;
+  margin: 0 auto;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Section Styling */
-.software-section,
-.company-section,
-.cta-section {
-  padding: 60px 20px;
-  text-align: center;
+.platform-section,
+.company-section {
+  padding: 100px 20px;
+  position: relative;
 }
 
-.software-section {
-  background-color: #fff;
+.platform-section {
+  background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
 }
 
 .company-section {
-  background-color: #f0f4f8;
-}
-
-.cta-section {
-  background: linear-gradient(135deg, #2a5298, #1e3c72);
-  color: white;
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
 }
 
 .section-content {
@@ -176,115 +285,368 @@ import dayjs from 'dayjs';
   margin: 0 auto;
 }
 
-h2 {
-  font-size: 2rem;
-  margin-bottom: 20px;
-  color: #1e3c72;
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
 }
 
-.cta-section h2 {
-  color: white;
+.section-header h2 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-p {
-  font-size: 1.1rem;
+.section-divider {
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+.platform-description,
+.company-description {
+  font-size: 1.2rem;
+  color: #4a5568;
   max-width: 800px;
-  margin: 0 auto 30px;
+  margin: 0 auto 60px;
+  text-align: center;
+  line-height: 1.8;
 }
 
-/* Features Grid */
+/* Features Section */
+.features-container {
+  margin-bottom: 60px;
+}
+
+.features-title {
+  font-size: 2.2rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 40px;
+  color: #2d3748;
+}
+
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 32px;
+  margin-bottom: 40px;
 }
 
 .feature-card {
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
+  background: #ffffff;
+  padding: 40px 32px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 48px rgba(102, 126, 234, 0.2);
+    border-color: rgba(102, 126, 234, 0.2);
+  }
 }
 
-.feature-card:hover {
-  transform: translateY(-5px);
+.feature-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
 }
 
 .feature-icon {
-  font-size: 2rem;
-  color: #2a5298;
-  margin-bottom: 10px;
+  font-size: 2.5rem;
+  color: white;
+}
+
+.feature-card h4 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #2d3748;
+}
+
+.feature-card p {
+  font-size: 1rem;
+  color: #4a5568;
+  line-height: 1.6;
+  margin: 0;
 }
 
 /* Company Highlights */
 .company-highlights {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
 }
 
-.highlight {
-  flex: 1;
-  min-width: 250px;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Call to Action Button */
-.cta-button {
-  background-color: #2a5298 !important;
-  border-color: #2a5298 !important;
-  padding: 10px 30px;
-  font-size: 1.1rem;
-}
-
-.cta-button:hover {
-  background-color: #1e3c72 !important;
-  border-color: #1e3c72 !important;
-}
-
-/* Footer Styling */
-.footer {
+.highlight-card {
+  background: #ffffff;
+  padding: 40px 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   text-align: center;
-  padding: 20px;
-  background-color: #1e3c72;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.highlight-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  :deep(.arco-icon) {
+    font-size: 1.8rem;
+    color: white;
+  }
+}
+
+.highlight-card h4 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #2d3748;
+}
+
+.highlight-card p {
+  font-size: 1rem;
+  color: #4a5568;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* CTA Section */
+.cta-section {
+  position: relative;
+  padding: 100px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+  overflow: hidden;
+}
+
+.cta-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.cta-bg-elements {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.cta-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  animation: float 6s ease-in-out infinite;
+}
+
+.cta-circle-1 {
+  width: 300px;
+  height: 300px;
+  top: -150px;
+  right: -150px;
+  animation-delay: 1s;
+}
+
+.cta-circle-2 {
+  width: 200px;
+  height: 200px;
+  bottom: -100px;
+  left: -100px;
+  animation-delay: 3s;
+}
+
+.cta-content {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cta-content h2 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 20px;
   color: white;
 }
 
-.footer a {
-  color: #a0c4ff;
-  text-decoration: none;
+.cta-content p {
+  font-size: 1.2rem;
+  margin-bottom: 40px;
+  opacity: 0.95;
 }
 
-.footer a:hover {
-  text-decoration: underline;
+/* Buttons */
+.cta-primary {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.cta-button,
+.cta-button-secondary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50px;
+  height: 56px;
+  padding: 0 40px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+
+    &::before {
+      left: 100%;
+    }
+  }
+}
+
+.cta-button-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Footer */
+.footer {
+  background: #1a202c;
+  color: #a0aec0;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.footer-content p {
+  margin: 8px 0;
+  font-size: 0.95rem;
+}
+
+.footer a {
+  color: #667eea;
+  text-decoration: none;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #764ba2;
+    text-decoration: underline;
+  }
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .title {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
 
   .subtitle {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 
-  h2 {
+  .section-header h2 {
+    font-size: 2.2rem;
+  }
+
+  .features-title {
     font-size: 1.8rem;
   }
 
   .features-grid {
     grid-template-columns: 1fr;
+    gap: 24px;
   }
 
   .company-highlights {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+  }
+
+  .cta-content h2 {
+    font-size: 2.2rem;
+  }
+
+  .platform-section,
+  .company-section,
+  .cta-section {
+    padding: 60px 20px;
+  }
+
+  .header {
+    padding: 60px 20px 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 2rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+
+  .feature-card,
+  .highlight-card {
+    padding: 32px 24px;
   }
 }
 </style>

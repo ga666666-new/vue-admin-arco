@@ -136,6 +136,13 @@ export default {
   'searchTable.status.completed': 'Completed',
   'searchTable.status.error': 'Error',
   'searchTable.status.title': 'Status',
+  'searchTable.status.ready': 'Ready',
+  'searchTable.status.processing': 'Processing',
+  'searchTable.status.paused': 'Paused',
+  'searchTable.status.noData': 'No Data',
+  'searchTable.status.readyDesc': 'Click the Start button to begin batch processing',
+  'searchTable.status.processingDesc': 'Processing data, you can pause or stop the process',
+  'searchTable.status.pausedDesc': 'Processing is paused, you can resume or stop the process',
 
   // Progress statistics
   'searchTable.progress.total': 'Total',
